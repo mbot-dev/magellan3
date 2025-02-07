@@ -6,11 +6,12 @@ const OqsFunc = require("./oqsFunc");
 const STATUS_PENDING = "pending";
 const STATUS_WATCHING = "watching";
 const STATUS_ERROR = "error";
-const URL_TO_FACE =
-  "https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1/pvt/face";
+// const URL_TO_FACE =
+  // "https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1/pvt/face";
+  const URL_TO_FACE = "http://localhost:8066/karte/api/v1/pvt/face";
 const DEBUG = false;
-DEBUG_PARSED = true;
-const POST = false;
+const DEBUG_PARSED = true;
+const POST = true;
 const DELETE = true;
 
 // 被保険者証一部負担金割合 = 数値 ただし 1割負担=010 等に設定されている

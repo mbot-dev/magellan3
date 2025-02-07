@@ -15,8 +15,10 @@ const watcher = new ResWatcher(evtEmitter)
 // const directoryToWatch = '\\MAGELLAN-WIN\share'
 const directoryToWatch = '/home/kazushi/develop/oqs/res'
 // const directoryToWatch = '/Users/kazushi/develop/oqs/res'
-const testURL = 'https://dashing-skunk-nominally.ngrok-free.app'
-const appURL = 'https://dashing-skunk-nominally.ngrok-free.app'
+// const testURL = 'https://dashing-skunk-nominally.ngrok-free.app'
+// const appURL = 'https://dashing-skunk-nominally.ngrok-free.app'
+const testURL = 'http://localhost:8066'
+const appURL = 'http://localhost:8066'
 
 const createWindow = () => {
   const { x, y, width, height } = store.getBounds()
