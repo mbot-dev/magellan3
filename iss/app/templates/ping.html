@@ -1,0 +1,35 @@
+<html lang="ja">
+<head>
+    <title>ping</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <style>
+        body {color:#414141;font-size:16px;line-height:1.5;text-rendering:optimizeLegibility !important;-webkit-font-smoothing:antialiased !important;}
+    </style>
+</head>
+<body>
+    <div class="w3-content" style="max-width:600px;">
+        <div class="w3-container w3-green">
+            <h3>マーガレット電子カルテ</h3>
+        </div>
+        <div class="w3-panel">
+            <p>{{facility}}からお知らせがあります。</p>
+            <p>ご覧いただく場合は、次のリンクをタップしてください。</p>
+            <div>
+                <a href="{{callback_url}}/?token={{token}}" target="_blank" rel="noopener noreferrer">{{token}}</a>
+            </div>
+        </div>
+        <div class="w3-panel">
+            <p>このメールにお心当たりのない場合は無視してください。</p>
+            <p>このメールは自動配信のため、返信は受付できません。ご了承をお願いします。</p>
+        </div>
+        <div class="w3-panel">
+            <span class="w3-medium">デジタル・ユーザーズ</span><br/>
+            <span class="w3-medium">郵便番号: 230-0074</span><br/>
+            <span class="w3-medium">住所: 横浜市鶴見区北寺尾 7-25-9-103</span><br/>
+            <span class="w3-medium">電話: 045-571-6572</span><br/>
+        </div>
+    </div>
+</body>
+</html>

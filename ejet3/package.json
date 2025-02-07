@@ -1,0 +1,43 @@
+{
+  "name": "ejet3",
+  "productName": "Lilac",
+  "version": "1.0.0",
+  "description": "EHR application for the future",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make --platform=win32",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.5.0",
+    "@electron-forge/maker-deb": "^7.5.0",
+    "@electron-forge/maker-rpm": "^7.5.0",
+    "@electron-forge/maker-squirrel": "^7.5.0",
+    "@electron-forge/maker-zip": "^7.5.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.5.0",
+    "@electron-forge/plugin-fuses": "^7.5.0",
+    "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^9.15.0",
+    "electron": "33.2.0",
+    "eslint": "^9.15.0",
+    "globals": "^15.12.0"
+  },
+  "keywords": [],
+  "author": {
+    "name": "mbot-dev",
+    "email": "kazushi.minagawa@mac.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@electron-toolkit/utils": "^3.0.0",
+    "chokidar": "^4.0.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^8.2.0",
+    "es-toolkit": "^1.27.0",
+    "uuid": "^11.0.3",
+    "xml-js": "^1.6.11"
+  }
+}

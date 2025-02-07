@@ -1,0 +1,142 @@
+
+.simple-a4 {
+    color: #414141;
+    font-size: 14px;
+    line-height: 1.6;
+    text-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.005);
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    width: 210mm;
+    height: 290mm;
+    padding: 25mm 20mm 20mm 20mm;
+    border: 1px solid #d1d1d1;
+    float: none;
+}
+
+.letter-center {
+    text-align: center;
+}
+
+.letter-right {
+    text-align: right;
+}
+
+.letter-float-right {
+    float: right;
+}
+
+.letter-clear-both {
+    clear: both;
+}
+
+.letter-margin-top {
+    margin-top: 16px;
+}
+
+.letter-main-article {
+    margin-top: 16px;
+    min-height: 30%;
+}
+
+.letter-remarks {
+    position: absolute;
+    width: 100%;
+    bottom: 32px;
+    height: 32px;
+}
+
+.letter-border-box {
+    border: 1px solid #d1d1d1;
+}
+
+.letter-padding-small {
+    padding: 2px 4px 2px 4px;
+}
+
+.letter-padding-small-small {
+    padding: 2px 2px 2px 2px;
+}
+
+
+@media print {
+
+    .simple-a4 {
+        width: 210mm;
+        height: 290mm;
+        padding: 25mm 20mm 20mm 20mm;
+        border: none;
+        float: none;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        font: 9pt Verdana, "sans-serif";
+        line-height: 1.0;
+        background: #fff !important;
+        color: #000;
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid #414141;
+        padding: 4px;
+    }
+
+    /* Set font to 16px/13pt, set background to white and font to black.*/
+    /* This saves ink */
+    body {
+        font: 9pt Verdana, "sans-serif";
+        line-height: 1.0;
+        background: #fff !important;
+        color: #ff5722;
+        -webkit-font-smoothing: antialiased !important;
+    }
+
+    h1 {
+        font-size: 24pt;
+    }
+
+    h2,
+    h3,
+    h4 {
+        font-size: 14pt;
+        margin-top: 25px;
+    }
+
+    /* Defining all page breaks */
+    a {
+        page-break-inside: avoid
+    }
+
+    blockquote {
+        page-break-inside: avoid;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        page-break-after: avoid;
+        page-break-inside: avoid
+    }
+
+    img {
+        page-break-inside: avoid;
+        page-break-after: avoid;
+    }
+
+    tr,
+    pre {
+        page-break-inside: avoid
+    }
+
+    ul,
+    ol,
+    dl {
+        page-break-before: avoid
+    }
+}

@@ -1,0 +1,49 @@
+{
+	"folders": [
+		{
+			"name": "kafka",
+			"path": "kafka"
+		},
+		{
+			"name": "space",
+			"path": "space"
+		},
+		{
+			"name": "iss",
+			"path": "iss"
+		},
+		{
+			"name": "small",
+			"path": "small"
+		},
+		{
+			"name": "large",
+			"path": "large"
+		},
+		{
+			"name": "bridge",
+			"path": "bridge"
+		},
+		{
+			"name": "nebula",
+			"path": "nebula"
+		},
+		{
+			"name": "white",
+			"path": "white"
+		},
+		{
+			"name": "stream",
+			"path": "stream"
+		},
+		{
+			"path": "jet3"
+		},
+		{
+			"path": "ejet3"
+		},
+		{
+			"path": "docs"
+		}
+	]
+}

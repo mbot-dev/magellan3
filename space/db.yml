@@ -1,0 +1,55 @@
+services:
+#----------------------------------------
+  small:
+    image: "postgres:16"
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=small_user
+      - POSTGRES_USER=small
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    volumes:
+      - type: volume
+        source: small_volume
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ../small
+        target: /usr/src
+      - type: bind
+        source: ../small/init
+        target: /docker-entrypoint-initdb.d
+    networks:
+      - magellan-net
+    restart: unless-stopped
+#----------------------------------------
+  large:
+    image: "postgres:16"
+    environment:
+      - POSTGRES_PASSWORD=large_user
+      - POSTGRES_USER=large
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    ports:
+      - 6543:5432
+    networks:
+      - magellan-net
+    volumes:
+      - type: volume
+        source: large_volume
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ../large
+        target: /usr/src
+      - type: bind
+        source: ../large/init
+        target: /docker-entrypoint-initdb.d
+    restart: unless-stopped
+#----------------------------------------
+volumes:
+  small_volume:
+    external: true
+  large_volume:
+    external: true
+#----------------------------------------
+networks:
+  magellan-net:
+    external: true

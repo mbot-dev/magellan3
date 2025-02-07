@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Telemedicine System</title>
+    <style>
+        #root {position: absolute; top: 0; right: 0; width: 100%; height: 100%;}
+    </style>
+</head>
+<body>
+<div id="root"></div>
+</body>
+<script src="https://meet2.digital-users.dev/external_api.js"></script>
+<script>
+    const domain = "meet2.digital-users.dev";
+    const options = {
+        roomName: "{{roomName}}",
+        width: '100%',
+        height: '100%',
+        parentNode: document.querySelector('#root'),
+        configOverwrite: {
+            disableDeepLinking: true,
+            prejoinPageEnabled: false,
+            disableGrantModerator: true,
+            defaultLanguage: 'ja',
+            toolbarButtons: [
+                'microphone', 'camera', 'desktop', 'hangup'
+            ],
+        },
+        interfaceConfigOverwrite: {},
+        jwt: "{{jwt}}"
+    };
+    const api = new JitsiMeetExternalAPI(domain, options);
+    api.executeCommand('subject', "{{subject}}");
+</script>
+</html>

@@ -1,0 +1,18 @@
+services:
+#----------------------------------------
+  stream:
+    build:
+      context: ../stream
+    env_file:
+      - ./magellan.env 
+    environment:
+      - LOG_LEVEL=20
+    ports:
+      - 6066:6066 
+    networks:
+      - magellan-net
+    restart: unless-stopped
+#----------------------------------------
+networks:
+  magellan-net:
+    external: true

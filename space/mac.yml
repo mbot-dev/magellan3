@@ -1,0 +1,163 @@
+services:
+#----------------------------------------
+  nginx:
+      image: nginx:latest
+      volumes:
+        - type: bind
+          source: ../jet3/nginx/conf.d
+          target: /etc/nginx/conf.d
+        - type: bind
+          source: /Users/kazushi/develop/magellan3/jet3/dist
+          target: /user/share/nginx/html
+      depends_on:
+        - iss
+      ports:
+        - 8066:8066
+      networks:
+        - magellan-net
+#----------------------------------------
+  iss:
+    build:
+      context: ../iss
+    env_file:
+      - ./magellan.env
+    environment:
+      - LOG_LEVEL=20
+      - COURIER_AUTH_TOKEN=pk_prod_JW99M5PSWE4GKMG9D19MG8R4PJYW
+      - COURIER_TEMPLATE_ID=ZZM67F44SEM8CCPBGP8C8KH6NHCA
+      # Gmail
+      - MAIL_SUBJECT_SIGNUP=電子メールアドレスの確認
+      - MAIL_TITLE_SIGNUP=電子カルテのアカウントを作成しますか？
+      - MAIL_JOB_SIGNUP=作成する
+      # 
+      - MAIL_SUBJECT_LOGIN=電子メールでログイン
+      - MAIL_TITLE_LOGIN=電子カルテにログインしますか？
+      - MAIL_JOB_LOGIN=ログインする
+      #
+      - MAIL_SUBJECT_ADD_USER=電子メールアドレスの確認
+      - MAIL_TITLE_ADD_USER=電子カルテに職員用のアカウントを作成しますか？
+      - MAIL_JOB_ADD_USER=作成する
+      #
+      - AUTH_SUBJECT_INVITE=メールで招待
+      - AUTH_SUBJECT_CHANGE_NAME=メールでアドレス変更
+      - AUTH_SUBJECT_PING=お知らせ
+      - AUTH_SUBJECT_CALL=オンライン診療のお知らせ
+    ports:
+      - 6001:6001
+    command: uvicorn app.main:app --host 0.0.0.0 --port 6001
+    networks:
+      - magellan-net
+    depends_on:
+      - redis
+    restart: unless-stopped
+#----------------------------------------
+  bridge:
+    build:
+      context: ../bridge
+    env_file:
+      - ./magellan.env
+    environment:
+      - LOG_LEVEL=20
+    ports:
+      - 6201:6201
+    command: uvicorn app.main:app --host 0.0.0.0 --port 6201
+    networks:
+      - magellan-net
+    depends_on:
+      - small
+      - large
+    restart: unless-stopped
+#----------------------------------------
+  stream:
+    build:
+      context: ../stream
+    env_file:
+      - ./magellan.env 
+    environment:
+      - LOG_LEVEL=20
+    ports:
+      - 6066:6066 
+    networks:
+      - magellan-net
+    restart: unless-stopped
+#----------------------------------------
+  nebula:
+    build:
+      context: ../nebula
+    env_file:
+      - ./magellan.env
+    environment:
+      - LOG_LEVEL=20
+      - THUMBNAIL_SIZE=192
+    ports:
+      - 6301:6301
+    command: uvicorn app.main:app --host 0.0.0.0 --port 6301
+    networks:
+      - magellan-net
+    volumes:
+      - type: bind
+        source: /Users/kazushi/develop/upload
+        target: /media
+    restart: unless-stopped
+#----------------------------------------
+  small:
+    image: "postgres:16"
+    environment:
+      - POSTGRES_PASSWORD=small_user
+      - POSTGRES_USER=small
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    volumes:
+      - type: volume
+        source: small_volume2
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ../small
+        target: /usr/src
+      - type: bind
+        source: ../small/init
+        target: /docker-entrypoint-initdb.d
+    networks:
+      - magellan-net
+    restart: unless-stopped
+#----------------------------------------
+  large:
+    image: "postgres:16"
+    environment:
+      - POSTGRES_PASSWORD=large_user
+      - POSTGRES_USER=large
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    networks:
+      - magellan-net
+    volumes:
+      - type: volume
+        source: large_volume2
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ../large
+        target: /usr/src
+      - type: bind
+        source: ../large/init
+        target: /docker-entrypoint-initdb.d
+    restart: unless-stopped    
+#----------------------------------------
+  redis:
+    image: "redis:latest"
+    networks:
+      - magellan-net
+    volumes:
+      - type: volume
+        source: redis_data
+        target: /data
+    restart: unless-stopped
+#----------------------------------------
+volumes:
+  redis_data:
+    external: true
+  small_volume2:
+    external: true
+  large_volume2:
+    external: true  
+#----------------------------------------
+networks:
+  magellan-net:
+    external: true

@@ -1,0 +1,347 @@
+body {
+  background-color: var(--background);
+  color: var(--on-background);
+  font-family: "ヒラギノ角ゴ", "Noto Sans JP", "メイリオ", Helvetica, Arial;
+  font-size: 15px;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+:focus {
+  outline: 2px solid #9e9e9e;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 8px 0; /* 20px ?? */
+}
+
+.w3-check {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  top: 0; /* 6px ?? */
+  accent-color: var(--accent);
+}
+.w3-radio {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  top: 0; /* 6px ?? */
+  accent-color: var(--accent);
+}
+
+.w3-table th,
+.w3-table-all th {
+  padding: 8px 8px;
+  display: table-cell;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #414141;
+}
+
+.w3-spin {
+  animation: w3-spin 1s infinite linear;
+}
+
+input.z3-input-disabled {
+  width: 100%;
+  display: block;
+  padding: 8px;
+  border: none;
+  background-color: var(--background);
+  color: var(--on-background);
+}
+
+input[type="text"]:focus {
+  background-color: var(--surface);
+}
+
+td.z3-middle-td {
+  vertical-align: middle;
+}
+
+/*************************************************/
+.z3-select {
+  padding: 8px 8px;
+  border: 1px solid #ccc;
+}
+
+.z3-background {
+  background-color: var(--background);
+  color: var(--on-background);
+}
+
+.z3-surface {
+  background-color: var(--surface);
+  color: var(--on-surface);
+}
+
+.z3-primary {
+  background-color: var(--primary) !important;
+  color: var(--on-primary) !important;
+}
+
+.z3-primary-selected {
+  background-color: var(--primary-selected);
+  color: var(--on-primary);
+}
+
+.z3-secondary {
+  background-color: var(--secondary);
+  color: var(--on-secondary);
+}
+
+.z3-karte {
+  background-color: var(--karte);
+  color: var(--on-karte);
+}
+
+.z3-text-karte {
+  color: var(--on-karte);
+}
+
+.z3-text-oral {
+  color: var(--oral);
+}
+
+.z3-text-injection {
+  color: var(--injection);
+}
+
+.z3-text-topical {
+  color: var(--topical);
+}
+
+.z3-text-09-rem {
+  font-size: 0.9rem !important;
+}
+
+.z3-text-08-rem {
+  font-size: 0.8rem !important;
+}
+
+.z3-white-space-pre {
+  white-space: pre;
+}
+
+.z3-padding-box {
+  padding: var(--pdd);
+}
+
+.z3-border-bottom-karte {
+  border-bottom: 4px solid var(--karte);
+}
+
+.z3-border-bottom-secondary {
+  border-bottom: 4px solid var(--secondary);
+}
+
+.z3-border-bottom-surface {
+  border-bottom: 4px solid var(--surface);
+}
+
+.z3-icon-wrapper {
+  display: flex;
+  align-items: center;
+  font-size: var(--icon-size, 20px);
+  font-weight: 100;
+  color: var(--icon-color, --on-background);
+}
+
+ul.z3-menu-ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li.z3-menu-li {
+  display: inline-block;
+  padding: 8px;
+  margin: 0;
+  cursor: pointer;
+}
+
+li.z3-menu-li-no-pointer {
+  display: inline-block;
+  padding: 8px;
+  margin: 0;
+}
+
+.z3-flex {
+  width: 100%;
+  display: flex;
+  justify-content: var(--justify, flex-start);
+  align-items: var(--align, baseline);
+  column-gap: var(--gap, 0);
+  padding: 0.01em 0;
+}
+
+.z3-flex-column {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: var(--justify, flex-start);
+  align-items: var(--align, flex-start);
+  row-gap: var(--gap, 0);
+  padding: 0.01em 0;
+}
+
+.z3-flex-glue {
+  flex: 10 0 8px;
+}
+
+.z3-flex-grow {
+  flex-grow: 1;
+}
+
+.z3-flex-width {
+  flex: 0 0 var(--w, 8px);
+}
+
+.z3-flex-height {
+  flex: 0 0 var(--h, 4px);
+}
+
+.z3-auto-fit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-width, 220px), 1fr));
+  row-gap: 8px;
+  column-gap: 8px;
+}
+
+.z3-calc-scroll-container {
+  height: calc(100% - 16px);
+  max-height: calc(var(--max-height));
+  overflow-y: auto;
+}
+
+.z3-radio-box {
+  display: flex;
+  align-items: center;
+  column-gap: 4px;
+  flex: 0 0 auto;
+}
+
+.z3-app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.5rem;
+  &::after {
+    width: 60px !important;
+    content: var(--txt);
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+    text-align: center;
+  }
+}
+
+.z3-bundle-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: row;
+}
+
+.z3-hide {
+  display: none;
+}
+
+.z3-print-ref {
+  width: 980px !important;
+  max-height: 1386px !important;
+}
+
+.z3-receipt-size {
+  width: 100%;
+  margin: 0 auto;
+  padding: 64px 64px 32px 64px !important;
+}
+
+.z3-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.z3-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f6f6f6;
+  min-width: 230px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  z-index: 50;
+}
+
+.z3-dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.z3-dropdown a:hover {
+  background-color: #ddd;
+}
+
+.z3-show {
+  display: block;
+}
+
+@media print {
+  .z3-print-ref {
+    width: 980px !important;
+    font-size: 0.96rem !important;
+  }
+  .z3-break-before {
+    page-break-before: always !important;
+  }
+  .z3-inside-avoid {
+    page-break-inside: avoid !important;
+  }
+}
+
+/*********************************************/
+
+.custom-dragger-horizontal {
+  display: none;
+}
+.custom-gutter-horizontal {
+  padding: 0 !important;
+  height: 100% !important;
+  width: 1px !important;
+  background-color: #ccc; /* var(--background) !important; */
+  z-index: 10;
+}
+.custom-gutter-horizontal:hover {
+  width: 4px !important;
+  background-color: var(--secondary) !important;
+  cursor: col-resize;
+}
+
+.custom-dragger-vertical {
+  display: none;
+}
+.custom-gutter-vertical {
+  padding: 0 !important;
+  height: 6px !important;
+  width: 100% !important;
+  background-color: var(--secondary) !important;
+  z-index: 10;
+}
+.custom-gutter-vertical:hover {
+  height: 6px !important;
+  background-color: var(--secondary) !important;
+  cursor: col-resize;
+}
+
+.mg-handle {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  cursor: move;
+}
