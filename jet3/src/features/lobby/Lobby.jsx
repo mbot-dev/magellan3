@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import styled from "styled-components";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import { useLocalStorage } from "@react-hooks-library/core";
+import { useApi } from "../../io/ApiProvider";
 import { useStateValue } from "../../reducers/state";
 import StampBox from "../stamp/StampBox";
 import connectionManager from "../../io/connectionManager";
-import { requestRefreshAndAccessToken } from "../../io/issIO";
+// import { requestRefreshAndAccessToken } from "../../io/issIO";
 import { usePrevious } from "../../hook/usePrevious";
 import { currFacility } from "../../models/karteCtx";
 import pusherClient from "./pusherClient";
@@ -27,6 +28,7 @@ import RoomReceipt from "../receipt/RoomReceipt";
 const PVT_EVENT = "magellan:pvt-update";
 
 const Lobby = () => {
+  const apiService = useApi();
   const [
     {
       isOnline,
@@ -99,7 +101,7 @@ const Lobby = () => {
       }
       const timeout = Math.ceil(connectionManager.getExpiresIn() * 0.8); // 0.8 * expiresIn
       try {
-        const newToken = await requestRefreshAndAccessToken({ sub: loginName });
+        const newToken = await apiService.getService("iss").requestRefreshAndAccessToken({ sub: loginName });
         connectionManager.setToken(newToken);
         if (window?.electron) {
           await window.electron.storeAccessToken(newToken);

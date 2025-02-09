@@ -67,7 +67,7 @@ export const fetchPUT = async (path, payload) => {
     return keysToCamel(data);
 };
 
-export const fetchDELETE = async (path, params=null) => {
+export const fetchDELETE = async (path) => {
     const url = connectionManager.getEndPoint(path);
     const token = connectionManager.getAccessToken();
     return await fetch(url, {

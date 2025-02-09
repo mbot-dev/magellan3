@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import styled, { ThemeProvider } from "styled-components";
 import dateFormat from "dateformat";
+import { ApiProvider } from "./io/ApiProvider";
 import { GlobalStyle } from "./assets/globalStyles";
 import { useStateValue } from "./reducers/state";
 import Lobby from "./features/lobby/Lobby";
@@ -70,19 +71,21 @@ const App = () => {
 
   return (
     <ThemeProvider theme={settings.appTheme}>
-      <GlobalStyle />
-      <Layout>
-        <Header/>
-        <Side>
-          <SideBar />
-        </Side>
-        <Main>
-          <Lobby />
-        </Main>
-        <Footer>
-          <BottomBar />
-        </Footer>
-      </Layout>
+      <ApiProvider>
+        <GlobalStyle />
+        <Layout>
+          <Header />
+          <Side>
+            <SideBar />
+          </Side>
+          <Main>
+            <Lobby />
+          </Main>
+          <Footer>
+            <BottomBar />
+          </Footer>
+        </Layout>
+      </ApiProvider>
     </ThemeProvider>
   );
 };
