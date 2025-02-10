@@ -6,11 +6,12 @@ import StampTree from "./StampTree";
 import withDisplayBlock from "../../aux/withDisplayBlock";
 import StampTreeInput from "./StampTreeInput";
 import { currFacility } from "../../models/karteCtx";
-import { getUsingProcedures } from "../../io/stampIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { useLocalStorage } from "@react-hooks-library/core";
 import { BaseButton } from "../../aux/commonStyles";
 
 const StampBox = () => {
+  const margaret = useMargaret();
   const [{ user, stampEntity, usingProcedures }, dispatch] = useStateValue();
   const [myEntity, setMyEntity] = useLocalStorage("stamp_entity", "baseCharge");
 
@@ -20,7 +21,9 @@ const StampBox = () => {
     }
     const asyncGet = async (facility_id) => {
       try {
-        const data = await getUsingProcedures(facility_id);
+        const data = await margaret
+          .getApi("stamp")
+          .getUsingProcedures(facility_id);
         if (data?.length) {
           dispatch({ type: "setUsingProcedures", using: data });
         }

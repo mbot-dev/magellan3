@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { listContrastMedium } from "../../io/masterIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { COMMENT_KBN } from "../../models/claim";
 import { useStampState } from "../../reducers/stampState";
 import { useStateValue } from "../../reducers/state";
@@ -13,6 +13,7 @@ const FIND_FILM_TEXT = "画像記録用フィルム";
 const PLACE_HOLDER_SEARCH = "手技、医薬品、器材、区分、コード...";
 
 const SearchBarImage = () => {
+  const margaret = useMargaret();
   const dispatch = useStateValue()[1];
   const [{ procedureKbn, additions, numRecords }, localDispatch] =
     useStampState();
@@ -29,7 +30,7 @@ const SearchBarImage = () => {
     }
     const asyncGet = async () => {
       try {
-        const data = await listContrastMedium();
+        const data = await margaret.getApi("master").listContrastMedium();
         localDispatch({ type: "setSearchResults", results: data });
       } catch (err) {
         dispatch({ type: "setError", error: err });

@@ -2,14 +2,12 @@ import { useEffect, useRef } from "react";
 import styled from "styled-components";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import { useLocalStorage } from "@react-hooks-library/core";
-import { useApi } from "../../io/ApiProvider";
+import { useMargaret } from "../../io/MargaretProvider";
 import { useStateValue } from "../../reducers/state";
 import StampBox from "../stamp/StampBox";
 import connectionManager from "../../io/connectionManager";
-// import { requestRefreshAndAccessToken } from "../../io/issIO";
 import { usePrevious } from "../../hook/usePrevious";
 import { currFacility } from "../../models/karteCtx";
-import pusherClient from "./pusherClient";
 import APIAlert from "../../cmp/APIAlert";
 import { StampProvider } from "../../reducers/stampState";
 import { initialStampState, stampReducer } from "../../reducers/stampReducer";
@@ -28,7 +26,7 @@ import RoomReceipt from "../receipt/RoomReceipt";
 const PVT_EVENT = "magellan:pvt-update";
 
 const Lobby = () => {
-  const apiService = useApi();
+  const margaret = useMargaret();
   const [
     {
       isOnline,
@@ -44,7 +42,6 @@ const Lobby = () => {
     },
     dispatch,
   ] = useStateValue();
-  // const [pusherClient, setPusherClient] = useState(null);
   const prevName = usePrevious(loginChannel);
   const timerRef = useRef(null);
   const [splitSizes, setSplitSizes] = useLocalStorage("split_lobby", [79, 19]);
@@ -65,29 +62,29 @@ const Lobby = () => {
 
   // Subscribe pusher channel to receive access token
   useEffect(() => {
-    if (!dispatch || !pusherClient || !loginName || !loginChannel) {
+    if (!dispatch || !loginName || !loginChannel) {
       return;
     }
     if (prevName) {
       const prevChannel = `${prevName}`;
       console.log(`Unsubscribe previous channel ${prevChannel}`);
-      pusherClient.unsubscribe(prevChannel);
+      margaret.getApi("pusher").unsubscribe(prevChannel);
     }
     // loginChannel -> auth server returned
     const bearerChannelName = `${loginChannel}`;
-    pusherClient.subscribe(bearerChannelName, "iss:magic", (token) => {
+    margaret.getApi("pusher").subscribe(bearerChannelName, "iss:magic", (token) => {
       console.log(`Received bearer token`);
       console.log(`Unsubscribed pusher channel ${bearerChannelName}`);
-      pusherClient.unsubscribe(bearerChannelName);
+      margaret.getApi("pusher").unsubscribe(bearerChannelName);
       dispatch({ type: "setBearerToken", token: token }); // dispatch
     });
 
     // Clean up
     return () => {
-      pusherClient.unsubscribe(bearerChannelName);
+      margaret.getApi("pusher").unsubscribe(bearerChannelName);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, pusherClient, loginName, loginChannel]);
+  }, [dispatch, loginName, loginChannel]);
 
   useEffect(() => {
     if (!startAccessTokenTimer) {
@@ -101,7 +98,7 @@ const Lobby = () => {
       }
       const timeout = Math.ceil(connectionManager.getExpiresIn() * 0.8); // 0.8 * expiresIn
       try {
-        const newToken = await apiService.getService("iss").requestRefreshAndAccessToken({ sub: loginName });
+        const newToken = await margaret.getApi("iss").requestRefreshAndAccessToken({ sub: loginName });
         connectionManager.setToken(newToken);
         if (window?.electron) {
           await window.electron.storeAccessToken(newToken);
@@ -145,12 +142,12 @@ const Lobby = () => {
 
   // PVT Notification
   useEffect(() => {
-    if (!dispatch || appStatus !== "login" || !pusherClient || !user) {
+    if (!dispatch || appStatus !== "login" || !user) {
       return;
     }
     const facilityId = currFacility(user).id;
     const pvtChannel = `pvt-${facilityId}`;
-    pusherClient.subscribe(pvtChannel, PVT_EVENT, (data) => {
+    margaret.getApi("pusher").subscribe(pvtChannel, PVT_EVENT, (data) => {
       console.log(`received push event ${JSON.stringify(data, null)}`); // pvtId
       const { type } = data;
       if (type === "pvt") {
@@ -164,10 +161,9 @@ const Lobby = () => {
     });
 
     return () => {
-      pusherClient.unsubscribe(pvtChannel);
-      // pusherClient.unsubscribe(receiptChannel);
+      margaret.getApi("pusher").unsubscribe(pvtChannel);
     };
-  }, [dispatch, appStatus, pusherClient, user]);
+  }, [dispatch, appStatus, user]);
 
   const handleResize = (gutterIdx, allSizes) => {
     setSplitSizes(allSizes);

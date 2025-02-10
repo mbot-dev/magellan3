@@ -3,10 +3,9 @@ import styled from "styled-components";
 import { produce } from "immer";
 import hash from "object-hash";
 import { useStateValue } from "../../reducers/state";
-import { updateFacility } from "../../io/facilityIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { currFacility } from "../../models/karteCtx";
 import { CANCEL_SHORT_TEXT, EDIT_TEXT, SAVE_TEXT } from "../../aux/FormUtil";
-import { findAddressByZipCode } from "../../io/masterIO";
 import { useAttributes } from "../../hook/useAttributes";
 import { ENTITY_SPEC_FACILITY } from "./userSpec";
 import { TextInput, KanjiInput } from "../../cmp/KanjiInput";
@@ -112,6 +111,7 @@ const reducer = (state, action) => {
 };
 
 const FacilityEditor = () => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const [{ state, model }, localDispatch] = useReducer(reducer, initilaState);
   const [title, entity, attributes, attrKeys, mandatories] =
@@ -184,7 +184,9 @@ const FacilityEditor = () => {
   const handleSearchAddress = () => {
     const asyncSearch = async (zip_code) => {
       try {
-        const address = await findAddressByZipCode(zip_code);
+        const address = await margaret
+          .getApi("master")
+          .findAddressByZipCode(zip_code);
         // console.log(JSON.stringify(address, null, 3));
         if (!address || !address.prefecture) {
           return;
@@ -216,9 +218,9 @@ const FacilityEditor = () => {
     newModel.telephone = `${newModel.tel1}-${newModel.tel2}-${newModel.tel3}`;
     newModel.facsimile = `${newModel.fax1}-${newModel.fax2}-${newModel.fax3}`;
     newModel.insuranceFacilityCode = `${newModel.inst1}${newModel.inst2}${newModel.inst3}${newModel.inst4}${newModel.inst5}${newModel.inst6}${newModel.inst7}${newModel.inst8}${newModel.inst9}${newModel.inst10}`;
-    startTransition(async() => {
+    startTransition(async () => {
       try {
-        await updateFacility(facility_id, newModel);
+        await margaret.getApi("facility").updateFacility(facility_id, newModel);
         dispatch({ type: "updateFacility", attributes: newModel });
         localDispatch({
           type: "init",

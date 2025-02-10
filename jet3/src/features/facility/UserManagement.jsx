@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useStateValue } from "../../reducers/state";
-import { sendInviteLink } from "../../io/issIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { currFacility } from "../../models/karteCtx";
 import LobbyMessage from "../lobby/LobbyMessage";
-import { listUsers, updateUserInfo, updateUserStatus } from "../../io/userIO";
 import MoreVertClick from "../../cmp/MoreVertClick";
 import SimpleAlert from "../../cmp/SimpleAlert";
 import CustomSelect2 from "../../cmp/CustomSelect2";
@@ -69,16 +68,17 @@ memo: ""
 narcoticLicenseNum: ""
 ----------------------------------------
 users_facility association
-status: "active"  active | 休職　 | 退職
+status: "active"  active | 休職  退職
 userRole: "admin"  admin | user
 */
 const UserManagement = () => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const isOwner = useOwner(user);
   const [userStatusToList, setUserStatusToList] = useState("active");
   const [users, setUsers] = useState([]);
   const [showAddUser, toggleShowAddUserDialog] = useState(false);
-  const [duplicateUser, setDuplicateUser] = useState(null); //　既に登録済みのユーザー
+  const [duplicateUser, setDuplicateUser] = useState(null); // 既に登録済みのユーザー
   const [error, setError] = useState(null); // 職員登録エラー
   const [success, setSuccess] = useState(null); // 職員登録 メール送信成功
   const [userToAction, setUserToAction] = useState(null);
@@ -97,7 +97,7 @@ const UserManagement = () => {
     }
     const asyncGet = async () => {
       try {
-        const res = await listUsers(currFacility(user).id, userStatusToList);
+        const res = await margaret.getApi("user").listUsers(currFacility(user).id, userStatusToList);
         setUsers(res);
       } catch (err) {
         dispatch({ type: "setError", error: err });
@@ -129,7 +129,7 @@ const UserManagement = () => {
       newStatus: newStatus === "comeback" ? "active" : newStatus,
     };
     try {
-      await updateUserStatus(data);
+      await margaret.getApi("user").updateUserStatus(data);
       setUserToAction(null);
       fetchUsers();
     } catch (err) {
@@ -142,7 +142,7 @@ const UserManagement = () => {
     const isMe = targetId === user.id;
     const asyncUpdate = async () => {
       try {
-        await updateUserInfo(targetId, updatedAttrs);
+        await margaret.getApi("user").updateUserInfo(targetId, updatedAttrs);
         setUserToAction(null);
         if (isMe) {
           dispatch({ type: "updateMe", me: updatedAttrs });
@@ -186,7 +186,7 @@ const UserManagement = () => {
       },
     };
     try {
-      await sendInviteLink(payload);
+      await margaret.getApi("iss").sendInviteLink(payload);
       setSuccess(successMessage(newUser.fullName));
     } catch (err) {
       if (err?.status === 409) {

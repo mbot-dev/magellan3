@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import dateFormat from "dateformat";
 import { useStateValue } from "../../../reducers/state";
-import { getDiagnosisList, putDiagnosis } from "../../../io/diagnosisIO";
+import { useMargaret } from "../../../io/MargaretProvider";
 import DiagnosisSetter from "./DiagnosisSetter";
 import { useKarteState } from "../karteState";
 import MoreVertClick from "../../../cmp/MoreVertClick";
@@ -23,6 +23,7 @@ const DEPT_TEXT = "診療科";
 export const DIAGNOSIS_DATE_DISPLAY = "yyyy-mm-dd";
 
 const Diagnosis = ({ patient }) => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const [{ diagnosis_list }, karteDispatch] = useKarteState();
   const [entryToEdit, setEntryToEdit] = useState(null);
@@ -34,7 +35,7 @@ const Diagnosis = ({ patient }) => {
     }
     const asyncGet = async (fc_id, pt_id) => {
       try {
-        const list = await getDiagnosisList(fc_id, pt_id);
+        const list = await margaret.getApi("diagnosis").getDiagnosisList(fc_id, pt_id);
         fetched.current = true;
         karteDispatch({
           type: "setRiskList",
@@ -69,7 +70,7 @@ const Diagnosis = ({ patient }) => {
     }
     const asyncPut = async (risk) => {
       try {
-        await putDiagnosis(risk);
+        await margaret.getApi("diagnosis").putDiagnosis(risk);
         karteDispatch({
           type: "upcertRisk",
           payload: { entity: "diagnosis", risk },

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useStateValue } from '../../reducers/state';
 import withDisplayBlock from '../../aux/withDisplayBlock';
-import { getAbnormalLabTest } from "../../io/labTestIO";
+import { useMargaret } from "../../io/MargaretProvider";
 
 const flagColor = flg => {
     const blue = flg && flg.startsWith('L') ? 'w3-text-blue' : '';
@@ -15,6 +15,7 @@ const getSelectedRow = e => {
 };
 
 const RoomTestAlert = () => {
+    const margaret = useMargaret();
     const [{ abnormalId }, dispatch] = useStateValue();
     const [data, setData] = useState([]);
 
@@ -24,7 +25,7 @@ const RoomTestAlert = () => {
         }
         const asyncGet = async (abnormalId) => {
             try {
-                const tests = await getAbnormalLabTest(abnormalId);
+                const tests = await margaret.getApi("labTest").getAbnormalLabTest(abnormalId);
                 const newData = [...data, ...tests];
                 setData(newData);
             } catch (err) {

@@ -4,14 +4,13 @@ import styled from "styled-components";
 import dateFormat from "dateformat";
 import pvtFunc from "../../models/pvtFunc";
 import { useStateValue } from "../../reducers/state";
-import { find } from "../../io/patientIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { isDob, isTelephone, normalizeText } from "../../util/strings";
 import { isEnter } from "../../aux/FormUtil";
 import { currFacility, ISO_DATE_TIME } from "../../models/karteCtx";
 import { SearchIcon } from "../../cmp/Icons";
 import withDisplayNull from "../../aux/withDisplayNull";
 import { PATIENT_SEARCH_SPEC, ROW_MENU_SEARCH } from "./pvtSpec";
-import { saveVisit } from "../../io/pvtIO";
 import MoreHorizClick from "../../cmp/MoreHorizClick";
 
 const createPvt = (patient, user) => {
@@ -40,6 +39,7 @@ const createPvt = (patient, user) => {
 };
 
 const PatientSearch = () => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const [list, setList] = useState([]);
   const [query, setQuery] = useState("");
@@ -70,11 +70,9 @@ const PatientSearch = () => {
     payload.search = search;
     const asyncGET = async (params) => {
       try {
-        const result = await find(
-          params.facility_id,
-          params.attribute,
-          params.search,
-        );
+        const result = await margaret
+          .getApi("patient")
+          .find(params.facility_id, params.attribute, params.search);
         setList(result);
       } catch (err) {
         dispatch({ type: "setError", error: err });
@@ -94,7 +92,7 @@ const PatientSearch = () => {
       const pvt = createPvt(patient, user);
       startTransition(async () => {
         try {
-          await saveVisit(pvt);
+          await margaret.getApi("pvt").saveVisit(pvt);
         } catch (err) {
           dispatch({ type: "setError", error: err });
         }

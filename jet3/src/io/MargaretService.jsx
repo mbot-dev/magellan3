@@ -1,3 +1,4 @@
+import PusherService from "./PusherService";
 import DiagnosisService from "./DiagnosisService";
 import DocumentService from "./DocumentService";
 import FacilityService from "./FacilityService";
@@ -13,8 +14,9 @@ import RiskService from "./RiskService";
 import StampService from "./StampService";
 import UserService from "./UserService";
 
-class ApiService {
+class MargaretService {
   constructor() {
+    this.pusherService = new PusherService();
     this.diagnosisService = new DiagnosisService();
     this.documentService = new DocumentService();
     this.facilityService = new FacilityService();
@@ -31,8 +33,10 @@ class ApiService {
     this.userService = new UserService();
   }
 
-  get(name) {
+  getApi(name) {
     switch (name) {
+      case "pusher":
+        return this.pusherService;
       case "diagnosis":
         return this.diagnosisService;
       case "document":
@@ -67,4 +71,4 @@ class ApiService {
   }
 }
 
-export default ApiService;
+export default MargaretService;

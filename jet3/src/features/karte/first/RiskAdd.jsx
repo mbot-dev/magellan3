@@ -9,7 +9,7 @@ import { currFacility } from "../../../models/karteCtx";
 import { ADD_TEXT, DONE_TEXT } from "../../../aux/FormUtil";
 import ModalEditorLarge from "../../../cmp/ModalEditorLarge";
 import { KanjiInput } from "../../../cmp/KanjiInput";
-import { upcertRisk } from "../../../io/riskIO";
+import { useMargaret } from "../../../io/MargaretProvider";
 import { useAttributes } from "../../../hook/useAttributes";
 import CustomSelect2 from "../../../cmp/CustomSelect2";
 
@@ -49,6 +49,7 @@ const reducer = (state, action) => {
 };
 
 const RiskAddEditor = ({ patient, spec, ...props }) => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const karteDispatch = useKarteState()[1];
   const [{ state, model }, localDispatch] = useReducer(reducer, initilaState);
@@ -88,7 +89,7 @@ const RiskAddEditor = ({ patient, spec, ...props }) => {
   const handleAdd = () => {
     const asyncPost = async (entity, risk) => {
       try {
-        await upcertRisk(entity, risk);
+        await margaret.getApi("risk").upcertRisk(entity, risk);
         karteDispatch({ type: "upcertRisk", payload: { entity, risk } });
         Promise.resolve().then(() => {
           const next = attrKeys.reduce((acc, key) => {

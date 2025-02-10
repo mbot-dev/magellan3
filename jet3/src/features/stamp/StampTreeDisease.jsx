@@ -3,13 +3,7 @@ import { v4 } from "uuid";
 import withDisplayBlock from "../../aux/withDisplayBlock";
 import { useStateValue } from "../../reducers/state";
 import { DISEASE_STAMP_TREE_MENU } from "../../models/karteCtx";
-import {
-  deleteDiseaseStamp,
-  getDiseaseStampList,
-  saveDiseaseStamp,
-  updateDiseaseStamp,
-  updateDiseaseOrder,
-} from "../../io/stampIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import ContextMenu from "../../cmp/ContextMenu";
 import { currFacility } from "../../models/karteCtx";
 import DiseaseNameEditor from "./DiseaseNameEditor";
@@ -34,12 +28,11 @@ const DragStamp = ({ index, stampName, onDragStart, onDrop }) => {
   );
 };
 
-// tab.entity = disease 
-const StampTreeDisease = ({tab}) => {
-  const [
-    { appStatus, user, stampList, bundleArraySubmitted },
-    dispatch,
-  ] = useStateValue();
+// tab.entity = disease
+const StampTreeDisease = ({ tab }) => {
+  const margaret = useMargaret();
+  const [{ appStatus, user, stampList, bundleArraySubmitted }, dispatch] =
+    useStateValue();
   const [showPopup, setShowPopup] = useState(false);
   const [clickXY, setClickXY] = useState({ x: 0, y: 0 });
   const [popIndex, setPopIndex] = useState(-1);
@@ -58,7 +51,9 @@ const StampTreeDisease = ({tab}) => {
     // 病名スタンプ -> sort(医療機関:診療科:コード)
     const asyncGet = async (fcId) => {
       try {
-        const results = await getDiseaseStampList(fcId);
+        const results = await margaret
+          .getApi("stamp")
+          .getDiseaseStampList(fcId);
         if (!isCanceled) {
           dispatch({ type: "setStampList", entity: tab.entity, list: results });
           fetched.current = true;
@@ -78,8 +73,14 @@ const StampTreeDisease = ({tab}) => {
   useEffect(() => {
     let accept = bundleArraySubmitted;
     // console.log(JSON.stringify(bundleArraySubmitted, null, 3));
-    accept = accept && (bundleArraySubmitted?.entity === tab.entity || bundleArraySubmitted?.entity === "diagnosis");
-    accept = accept && (bundleArraySubmitted?.origin === "tool" || bundleArraySubmitted?.origin === "karte"); // my sel
+    accept =
+      accept &&
+      (bundleArraySubmitted?.entity === tab.entity ||
+        bundleArraySubmitted?.entity === "diagnosis");
+    accept =
+      accept &&
+      (bundleArraySubmitted?.origin === "tool" ||
+        bundleArraySubmitted?.origin === "karte"); // my sel
     accept = accept && bundleArraySubmitted?.array?.length > 0;
     if (!accept) {
       return;
@@ -103,7 +104,7 @@ const StampTreeDisease = ({tab}) => {
         newStamp.freq = freq;
         freq += 1;
         array.push(newStamp);
-        return saveDiseaseStamp(newStamp);
+        return margaret.getApi("stamp").saveDiseaseStamp(newStamp);
       })
       .filter((x) => x !== null);
 
@@ -130,7 +131,7 @@ const StampTreeDisease = ({tab}) => {
     const lightened = lightenBundle(diagBundle);
     dispatch(
       // bundleArraySubmitted へラップされる
-      { type: "dropStamp", stamp: lightened },
+      { type: "dropStamp", stamp: lightened }
     );
   };
 
@@ -156,7 +157,7 @@ const StampTreeDisease = ({tab}) => {
     if (item.action === "delete") {
       const doDelete = async (st) => {
         try {
-          await deleteDiseaseStamp(st.id);
+          await margaret.getApi("stamp").deleteDiseaseStamp(st.id);
           dispatch({
             type: "deleteStamp",
             entity: tab.entity,
@@ -191,7 +192,7 @@ const StampTreeDisease = ({tab}) => {
     });
     const update = async (order) => {
       try {
-        await updateDiseaseOrder(order);
+        await margaret.getApi("stamp").updateDiseaseOrder(order);
         dispatch({ type: "reorderStamp", entity: tab.entity, list: newList });
       } catch (err) {
         dispatch({ type: "setError", error: err });
@@ -204,7 +205,7 @@ const StampTreeDisease = ({tab}) => {
     const target = stampList[tab.entity][popIndex];
     const update = async (pk, data) => {
       try {
-        await updateDiseaseStamp(pk, data);
+        await margaret.getApi("stamp").updateDiseaseStamp(pk, data);
         dispatch({
           type: "updateStamp",
           entity: tab.entity,

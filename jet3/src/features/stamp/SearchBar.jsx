@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import styled from "styled-components";
 import { useStateValue } from "../../reducers/state";
-import {
-  findProceduresByKbnKbnNo,
-  findMasterByName,
-  findMasterByCode,
-  findCommentByCode,
-} from "../../io/masterIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { clinicFilter } from "../../models/claim";
 import { normalizeText } from "../../util/strings";
 
@@ -20,6 +15,7 @@ const SearchBar = ({
   localDispatch,
   children,
 }) => {
+  const margaret = useMargaret();
   const dispatch = useStateValue()[1];
 
   useEffect(() => {
@@ -32,11 +28,13 @@ const SearchBar = ({
         if (/^[A-Z]\d{3}$/.test(search)) {
           const kbn = search[0];
           const kbn_no = search.slice(1);
-          data = await findProceduresByKbnKbnNo(kbn, kbn_no, kbn_no);
+          data = await margaret
+            .getApi("master")
+            .findProceduresByKbnKbnNo(kbn, kbn_no, kbn_no);
         } else if (/^\d{9}$/.test(search)) {
-          data = await findMasterByCode(search);
+          data = await margaret.getApi("master").findMasterByCode(search);
         } else {
-          data = await findMasterByName(search);
+          data = await margaret.getApi("master").findMasterByName(search);
         }
         const filtered = data.filter((x) => clinicFilter(procedureKbn, x));
         localDispatch({
@@ -61,7 +59,9 @@ const SearchBar = ({
     const asyncGet = async (procedureClass) => {
       const { kbn, kbn_no } = procedureClass;
       try {
-        const data = await findProceduresByKbnKbnNo(kbn, kbn_no[0], kbn_no[1]);
+        const data = await margaret
+          .getApi("master")
+          .findProceduresByKbnKbnNo(kbn, kbn_no[0], kbn_no[1]);
         const filtered = data.filter((x) => clinicFilter(procedureKbn, x));
         localDispatch({ type: "setSearchResults", results: filtered });
       } catch (err) {
@@ -80,7 +80,7 @@ const SearchBar = ({
     const asyncGet = async (commentClass) => {
       const { code } = commentClass;
       try {
-        const data = await findCommentByCode(code);
+        const data = await margaret.getApi("master").findCommentByCode(code);
         localDispatch({ type: "setSearchResults", results: data });
       } catch (err) {
         dispatch({ type: "setError", error: err });

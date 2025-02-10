@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import styled, { ThemeProvider } from "styled-components";
 import dateFormat from "dateformat";
-import { ApiProvider } from "./io/ApiProvider";
+import { MargaretProvider } from "./io/MargaretProvider";
 import { GlobalStyle } from "./assets/globalStyles";
 import { useStateValue } from "./reducers/state";
 import Lobby from "./features/lobby/Lobby";
@@ -71,7 +71,7 @@ const App = () => {
 
   return (
     <ThemeProvider theme={settings.appTheme}>
-      <ApiProvider>
+      <MargaretProvider>
         <GlobalStyle />
         <Layout>
           <Header />
@@ -85,7 +85,7 @@ const App = () => {
             <BottomBar />
           </Footer>
         </Layout>
-      </ApiProvider>
+      </MargaretProvider>
     </ThemeProvider>
   );
 };

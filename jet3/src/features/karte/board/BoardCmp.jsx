@@ -8,7 +8,7 @@ import {
   PASTE_TEXT,
   THUMBNAIL_TEXT,
 } from "../../../aux/FormUtil";
-import { getImageSource } from "../../../io/mediaIO";
+import { useMargaret } from "../../../io/MargaretProvider";
 import {
   CLAIM_INSTRUCTION,
   CLAIM_MEDICINE,
@@ -148,6 +148,7 @@ const DropZone = styled.div`
 `;
 
 export const ImageSquare = ({ item, facility_id, onPop }) => {
+  const margaret = useMargaret();
   const dispatch = useStateValue()[1];
   const [src, setSrc] = useState(null);
 
@@ -157,7 +158,7 @@ export const ImageSquare = ({ item, facility_id, onPop }) => {
     }
     const asyncGet = async (path) => {
       try {
-        const data = await getImageSource(path);
+        const data = await margaret.getApi("media").getImageSource(path);
         setSrc(data);
       } catch (err) {
         dispatch({ type: "setError", error: err });

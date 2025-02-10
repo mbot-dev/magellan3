@@ -12,12 +12,7 @@ import LetterForm from "./LetterForm";
 import LetterReply from "./LetterReply";
 import MedicalCertificateForm from "./MedicalCertificateForm";
 import { letterHTML, replyHTML, certificateHTML } from "./leterTemplate";
-import {
-  saveDocument,
-  updateDocument,
-  deleteDocument,
-} from "../../../io/document.IO";
-import { getDocumentListByPatient } from "../../../io/document.IO";
+import { useMargaret } from "../../../io/MargaretProvider";
 import withDisplayNull from "../../../aux/withDisplayNull";
 import { currFacility } from "../../../models/karteCtx";
 import styled from "styled-components";
@@ -117,6 +112,7 @@ const useControl = (mode, selectedRow, isValid) => {
 
 // Container for Letter, Reply, Certificate
 const MedicalDocument = ({ show, patient }) => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const [docList, setDocList] = useState([]);
   const [selectedRow, setSelectedRow] = useState(-1); // No selection
@@ -146,7 +142,7 @@ const MedicalDocument = ({ show, patient }) => {
     }
     const asyncGet = async (facility_id, patient_id) => {
       try {
-        const list = await getDocumentListByPatient(facility_id, patient_id);
+        const list = await margaret.getApi("document").getDocumentListByPatient(facility_id, patient_id);
         setDocList(list);
         fetched.current = true;
       } catch (err) {
@@ -295,7 +291,7 @@ const MedicalDocument = ({ show, patient }) => {
       : dateFormat(new Date(), ISO_DATE_TIME);
     doc.issuedAt = issued;
     if (isNew) {
-      await saveDocument(doc).then(() => {
+      await margaret.getApi("document").saveDocument(doc).then(() => {
         const newList = [...docList];
         newList.unshift(doc);
         setDocList(newList);
@@ -305,7 +301,7 @@ const MedicalDocument = ({ show, patient }) => {
         setSelectedRow(0);
       });
     } else {
-      await updateDocument(doc.id, doc).then(() => {
+      await margaret.getApi("document").updateDocument(doc.id, doc).then(() => {
         const newList = [...docList];
         newList.splice(selectedRow, 1, doc);
         setDocList(newList);
@@ -370,7 +366,7 @@ const MedicalDocument = ({ show, patient }) => {
     }
     const target = docList[selectedRow];
     const doDelete = async (pk) => {
-      await deleteDocument(pk).then(() => {
+      await margaret.getApi("document").deleteDocument(pk).then(() => {
         const newList = [...docList];
         newList.splice(selectedRow, 1);
         setDocList(newList);

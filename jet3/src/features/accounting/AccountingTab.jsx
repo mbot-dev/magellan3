@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useStateValue } from "../../reducers/state";
 import CloseButton from "../../cmp/CloseButton";
 import HoverInfo from "../../cmp/HoverInfo";
-import { unlockVisit } from "../../io/pvtIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { currFacility } from "../../models/karteCtx";
 
 const useDisabled = (appStatus) => {
@@ -15,6 +15,7 @@ const useDisabled = (appStatus) => {
 };
 
 const AccountingTab = () => {
+  const margaret = useMargaret();
   const [
     { appStatus, accountingList, currentAccounting, dirtyList, user },
     dispatch,
@@ -35,7 +36,7 @@ const AccountingTab = () => {
     }
     const asyncClose = async (fc_id, pvt_id) => {
       try {
-        await unlockVisit(fc_id, pvt_id);
+        await margaret.getApi("pvt").unlockVisit(fc_id, pvt_id);
       } catch (err) {
         dispatch({ type: "setError", error: err });
       }

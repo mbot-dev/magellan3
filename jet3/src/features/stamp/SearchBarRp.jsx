@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import {
-  findNaihukuByCodeReg,
-  findNaihukuByCodeTiming,
-  findGaiyoByCodeDetail,
-} from "../../io/masterIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import {
   ADMIN_EXT_MEDICINE_MENU,
   ADMIN_IN_MEDICINE_MENU,
@@ -17,6 +13,7 @@ import { SearchIcon } from "../../cmp/Icons";
 import SearchBar from "./SearchBar";
 
 const SearchBarRp = () => {
+  const margaret = useMargaret();
   const dispatch = useStateValue()[1];
   const [{ procedureKbn, numRecords, myBundle }, localDispatch] =
     useStampState();
@@ -35,9 +32,13 @@ const SearchBarRp = () => {
       let data = [];
       try {
         if (reg && !timing_code) {
-          data = await findNaihukuByCodeReg(admin_code, reg);
+          data = await margaret
+            .getApi("master")
+            .findNaihukuByCodeReg(admin_code, reg);
         } else if (!reg && timing_code) {
-          data = await findNaihukuByCodeTiming(admin_code, timing_code);
+          data = await margaret
+            .getApi("master")
+            .findNaihukuByCodeTiming(admin_code, timing_code);
         }
         localDispatch({ type: "setSearchResults", results: data });
       } catch (err) {
@@ -58,7 +59,9 @@ const SearchBarRp = () => {
       let data = [];
       try {
         if (admin_code && detail_code) {
-          data = await findGaiyoByCodeDetail(admin_code, detail_code);
+          data = await margaret
+            .getApi("master")
+            .findGaiyoByCodeDetail(admin_code, detail_code);
         }
         localDispatch({ type: "setSearchResults", results: data });
       } catch (err) {

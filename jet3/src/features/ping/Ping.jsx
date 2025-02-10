@@ -3,7 +3,7 @@ import { v4 } from "uuid";
 import styled from "styled-components";
 import withDisplayNull from "../../aux/withDisplayNull";
 import { useStateValue } from "../../reducers/state";
-import { ping, call } from "../../io/issIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { currFacility } from "../../models/karteCtx";
 import RemoteSign from "./RemoteSign";
 import dateFormat from "dateformat";
@@ -20,25 +20,29 @@ const PING_MENUS = [
 ];
 
 const Ping = ({ patient }) => {
+  const margaret = useMargaret();
   const { user } = useStateValue()[0];
   const [pingList, setPingList] = useState([]);
   const [pingItem, setPingItem] = useState("");
 
   const sendPing = (vaccination) => {
     const asyncPing = async (payload) => {
-      await ping(payload).then(() => {
-        setPingItem("");
-        const entry = {
-          key: v4(),
-          pingClass: "同意書",
-          pingItem: payload.ping.item,
-          sentAt: dateFormat(new Date(), "yyyy-MM-dd"),
-          receivedAt: "",
-        };
-        const newList = [...pingList];
-        newList.push(entry);
-        setPingList(newList);
-      });
+      await margaret
+        .getApi("iss")
+        .ping(payload)
+        .then(() => {
+          setPingItem("");
+          const entry = {
+            key: v4(),
+            pingClass: "同意書",
+            pingItem: payload.ping.item,
+            sentAt: dateFormat(new Date(), "yyyy-MM-dd"),
+            receivedAt: "",
+          };
+          const newList = [...pingList];
+          newList.push(entry);
+          setPingList(newList);
+        });
     };
     const facility = currFacility(user);
     const payload = {
@@ -106,7 +110,7 @@ const Ping = ({ patient }) => {
     };
     const asyncCall = async (data) => {
       try {
-        const res = await call(data);
+        const res = await margaret.getApi("iss").call(data);
         const { meetingUrl } = res;
         window.open(meetingUrl);
         setPingItem("");

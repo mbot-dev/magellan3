@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { getSelectedRow } from "../../aux/FormUtil";
 import { useStateValue } from "../../reducers/state";
 import withDisplayBlock from "../../aux/withDisplayBlock";
-import { getInputBundle } from "../../io/inputIO";
-import { getUsingInput } from "../../io/stampIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { currFacility } from "../../models/karteCtx";
 
 const MAX_PD_FILE_SIZE = 1024 * 1024 * 10; // 10M
@@ -11,6 +10,7 @@ const TEXT_IMAGE_FILE = "画像ファイル";
 const TEXT_PDF_FILE = "PDFファイル";
 
 const StampTreeInput = () => {
+  const margaret = useMargaret();
   const [
     { appStatus, user, usingInputs, dirtyList, currentPatient },
     dispatch,
@@ -32,7 +32,7 @@ const StampTreeInput = () => {
     }
     const asyncGet = async (fcId) => {
       try {
-        const results = await getUsingInput(fcId);
+        const results = await margaret.getApi("stamp").getUsingInput(fcId);
         if (!isCanceled) {
           dispatch({ type: "setUsingInputs", using: results });
           fetched.current = true;
@@ -69,18 +69,21 @@ const StampTreeInput = () => {
     const row = getSelectedRow(e);
     const { entity } = usingInputs[row];
     const asyncGet = async (ent) => {
-      await getInputBundle(ent).then((inputCatalogue) => {
-        const { entity } = inputCatalogue;
-        if (entity === "smartShot") {
-          dispatch({ type: "showWhiteQR" });
-          return;
-        }
-        if (entity === "schema") {
-          dispatch({ type: "openSchemaPanel" });
-          return;
-        }
-        dispatch({ type: "setInputToEdit", target: inputCatalogue });
-      });
+      await margaret
+        .getApi("input")
+        .getInputBundle(ent)
+        .then((inputCatalogue) => {
+          const { entity } = inputCatalogue;
+          if (entity === "smartShot") {
+            dispatch({ type: "showWhiteQR" });
+            return;
+          }
+          if (entity === "schema") {
+            dispatch({ type: "openSchemaPanel" });
+            return;
+          }
+          dispatch({ type: "setInputToEdit", target: inputCatalogue });
+        });
     };
     asyncGet(entity).catch((err) => console.log(err));
   };

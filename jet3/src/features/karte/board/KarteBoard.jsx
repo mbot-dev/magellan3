@@ -7,7 +7,7 @@ import { boardInitialState, boardReducer } from "./boardReducer";
 import { useClerk } from "../../../hook/useClerk";
 import { useFacility } from "../../../hook/useFacility";
 import { useIntersectionObserver } from "../../../hook/useIntersectionObserver";
-import { deleteKarte, getHistory, postKarte } from "../../../io/karteIO";
+import { useMargaret } from "../../../io/MargaretProvider";
 import {
   GROUP_DIAGNOSIS,
   GROUP_FIRST_VISIT,
@@ -68,7 +68,6 @@ import {
 } from "./BoardCmp";
 import SimpleAlert from "../../../cmp/SimpleAlert";
 import StampSearcher from "./StampSearcher";
-import { SearchIcon } from "../../../cmp/Icons";
 
 const DESC = true;
 const PAGE_SIZE = 6;
@@ -96,8 +95,16 @@ const EDITING = "editing";
 const EDIT_END = "editEnd";
 
 const KarteBoard = ({ patient }) => {
+  const margaret = useMargaret();
   const [
-    { bundleArraySubmitted, bundleCopied, user, isOnline, showWhiteQR, settings },
+    {
+      bundleArraySubmitted,
+      bundleCopied,
+      user,
+      isOnline,
+      showWhiteQR,
+      settings,
+    },
     dispatch,
   ] = useStateValue();
   const [{ continuedDisease }, karteDispath] = useKarteState();
@@ -147,17 +154,12 @@ const KarteBoard = ({ patient }) => {
       limit,
       offset,
       client_order,
-      render,
+      render
     ) => {
       try {
-        const result = await getHistory(
-          fc_id,
-          pt_id,
-          limit,
-          offset,
-          client_order,
-          render,
-        );
+        const result = await margaret
+          .getApi("karte")
+          .getHistory(fc_id, pt_id, limit, offset, client_order, render);
         if (mode === "reset") {
           localDispatch({ type: "setData", payload: result });
           return;
@@ -182,7 +184,7 @@ const KarteBoard = ({ patient }) => {
       limit,
       offset,
       client_order,
-      render,
+      render
     );
   }, [patient.id, facility, user, render, fetchMode]);
 
@@ -212,7 +214,10 @@ const KarteBoard = ({ patient }) => {
   useEffect(() => {
     let accept = boardState === EDITING; // In editing mode
     accept = accept && bundleArraySubmitted?.patient?.ptId === patient.ptId; // patient match
-    accept = accept && (bundleArraySubmitted?.origin === "stampBox" || bundleArraySubmitted?.origin === "karte"); // Only accept selected in the stamp box
+    accept =
+      accept &&
+      (bundleArraySubmitted?.origin === "stampBox" ||
+        bundleArraySubmitted?.origin === "karte"); // Only accept selected in the stamp box
     accept = accept && bundleArraySubmitted?.array?.length > 0; // At least one bundle
     if (!accept) {
       return;
@@ -326,7 +331,7 @@ const KarteBoard = ({ patient }) => {
         selectedDept,
         selectedHis,
         isClerk,
-        importActive,
+        importActive
       );
       return;
     }
@@ -336,7 +341,7 @@ const KarteBoard = ({ patient }) => {
         selectedDept,
         selectedHis,
         isClerk,
-        importActive,
+        importActive
       );
       return;
     }
@@ -346,7 +351,7 @@ const KarteBoard = ({ patient }) => {
         selectedDept,
         selectedHis,
         isClerk,
-        importActive,
+        importActive
       );
     }
   };
@@ -363,7 +368,7 @@ const KarteBoard = ({ patient }) => {
     selectedDept,
     selectedHis,
     isClerk,
-    importActive = false,
+    importActive = false
   ) => {
     const activeDiag = importActive ? createActiveDiagnosis() : [];
     const newKarte = newKarteContext(
@@ -372,7 +377,7 @@ const KarteBoard = ({ patient }) => {
       selectedDoctor,
       selectedDept,
       selectedHis,
-      isClerk ? clerk : null,
+      isClerk ? clerk : null
     ); // 新規カルテのcontext情報
     const empty = "";
     newKarte.soa = { content: empty }; // SAOは空  maby no need
@@ -390,7 +395,7 @@ const KarteBoard = ({ patient }) => {
     selectedDept,
     selectedHis,
     isClerk,
-    importActive = false,
+    importActive = false
   ) => {
     // アクティブ病名
     const myP = importActive ? createActiveDiagnosis() : [];
@@ -429,7 +434,7 @@ const KarteBoard = ({ patient }) => {
         selectedDoctor,
         selectedDept,
         selectedHis,
-        isClerk ? clerk : null,
+        isClerk ? clerk : null
       );
       const empty = "";
       newKarte.soa = { content: empty };
@@ -458,7 +463,7 @@ const KarteBoard = ({ patient }) => {
       selectedDoctor,
       selectedDept,
       selectedHis,
-      isClerk ? clerk : null,
+      isClerk ? clerk : null
     );
     const empty = "";
     newKarte.soa = { content: empty }; // SOAは空 -> maybe no need
@@ -475,7 +480,7 @@ const KarteBoard = ({ patient }) => {
     selectedDept,
     selectedHis,
     isClerk,
-    importActive = false,
+    importActive = false
   ) => {
     const myP = importActive ? createActiveDiagnosis() : [];
     const targetIndex = DESC ? 0 : karteList.length - 1;
@@ -497,7 +502,7 @@ const KarteBoard = ({ patient }) => {
       selectedDoctor,
       selectedDept,
       selectedHis,
-      isClerk ? clerk : null,
+      isClerk ? clerk : null
     );
     newKarte.soa = copy.soa;
     newKarte.p = myP;
@@ -719,7 +724,7 @@ const KarteBoard = ({ patient }) => {
     const asyncPost = async (karte) => {
       localDispatch({ type: "setStateTransition" });
       try {
-        await postKarte(karte);
+        await margaret.getApi("karte").postKarte(karte);
         localDispatch({ type: "karteSaved" });
         localDispatch({ type: "reset" });
       } catch (err) {
@@ -766,9 +771,12 @@ const KarteBoard = ({ patient }) => {
     // 単純選択のカルテを削除
     const doDelete = async (pk) => {
       localDispatch({ type: "setStateTransition" });
-      await deleteKarte(pk).then(() => {
-        localDispatch({ type: "reset" });
-      });
+      await margaret
+        .getApi("karte")
+        .deleteKarte(pk)
+        .then(() => {
+          localDispatch({ type: "reset" });
+        });
     };
     doDelete(karteToDelete.id).catch((err) => console.log(err));
   };
@@ -917,11 +925,11 @@ const KarteBoard = ({ patient }) => {
         <div className="z3-flex-glue" />
         <StampSearcher disabled={boardState !== EDITING} />
         <button
-            className="w3-button w3-round-large w3-padding-small"
-            disabled={boardState !== EDITING}
-            onClick={handleOpenStampMaker}
-          >
-              {TEXT_ADD_PROCEDURE}
+          className="w3-button w3-round-large w3-padding-small"
+          disabled={boardState !== EDITING}
+          onClick={handleOpenStampMaker}
+        >
+          {TEXT_ADD_PROCEDURE}
         </button>
         <div className="z3-flex-glue" />
         <span className="z3-white-space-pre">表示: </span>
@@ -952,8 +960,8 @@ const KarteBoard = ({ patient }) => {
                         render === "dual"
                           ? "var(dual-cell-width)"
                           : render === "receipt"
-                            ? "var(receipt-cell-width)"
-                            : "var(data-cell-width)",
+                          ? "var(receipt-cell-width)"
+                          : "var(data-cell-width)",
                       "--bk": selected ? "var(--primary)" : "var(--karte)",
                       "--on-bk": selected
                         ? "var(--on-primary)"
@@ -1021,8 +1029,8 @@ const KarteBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(--dual-cell-width)"
                             : render === "receipt"
-                              ? "var(--receipt-cell-width)"
-                              : "var(--data-cell-width)",
+                            ? "var(--receipt-cell-width)"
+                            : "var(--data-cell-width)",
                         "--bk": settings.isSoaColoring
                           ? "var(--soa)"
                           : "var(--karte)",
@@ -1043,8 +1051,8 @@ const KarteBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(--dual-cell-width)"
                             : render === "receipt"
-                              ? "var(--receipt-cell-width)"
-                              : "var(--data-cell-width)",
+                            ? "var(--receipt-cell-width)"
+                            : "var(--data-cell-width)",
                         "--bk": settings.isSoaColoring
                           ? "var(--soa)"
                           : "var(--karte)",
@@ -1090,8 +1098,8 @@ const KarteBoard = ({ patient }) => {
                             render === "dual"
                               ? "var(--dual-cell-width)"
                               : render === "receipt"
-                                ? "var(--receipt-cell-width)"
-                                : "var(--data-cell-width)",
+                              ? "var(--receipt-cell-width)"
+                              : "var(--data-cell-width)",
                         }}
                       >
                         {value}
@@ -1136,7 +1144,10 @@ const KarteBoard = ({ patient }) => {
       {karteToDelete && (
         <DaingerSelection
           messages={[
-            `${dateFormat(karteToDelete.createdAt, "yyyy-m-d")}のカルテを削除しますか?`,
+            `${dateFormat(
+              karteToDelete.createdAt,
+              "yyyy-m-d"
+            )}のカルテを削除しますか?`,
           ]}
           onDainger={handleDelete}
           onCancel={cancelDelete}

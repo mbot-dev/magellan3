@@ -11,7 +11,7 @@ import ModalEditorLarge from "../../../cmp/ModalEditorLarge";
 import { GridItem, rowAt } from "../../../aux/commonStyles";
 import { KanjiInput } from "../../../cmp/KanjiInput";
 import { FirstWrapper } from "./firstStyle";
-import { deleteRisk, upcertRisk } from "../../../io/riskIO";
+import { useMargaret } from "../../../io/MargaretProvider";
 import { useAttributes } from "../../../hook/useAttributes";
 import CustomSelect2 from "../../../cmp/CustomSelect2";
 
@@ -112,6 +112,7 @@ const reducer = (state, action) => {
 };
 
 const EntryBox = ({ patient, spec, riskList, ...props }) => {
+  const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
   const karteDispatch = useKarteState()[1];
   const [{ state, model, selectedRow }, localDispatch] = useReducer(
@@ -162,7 +163,7 @@ const EntryBox = ({ patient, spec, riskList, ...props }) => {
   const handlePost = async (entity, risk) => {
     localDispatch({ type: "save" });
     try {
-      await upcertRisk(entity, risk);
+      await margaret.getApi("risk").upcertRisk(entity, risk);
       karteDispatch({ type: "upcertRisk", payload: { entity, risk } });
     } catch (err) {
       dispatch({ type: "setError", error: err });
@@ -197,7 +198,7 @@ const EntryBox = ({ patient, spec, riskList, ...props }) => {
     const asyncDelete = async (entity, pk) => {
       localDispatch({ type: "save" });
       try {
-        await deleteRisk(entity, pk);
+        await margaret.getApi("risk").deleteRisk(entity, pk);
         karteDispatch({ type: "deleteRisk", payload: { entity, pk } });
       } catch (err) {
         dispatch({ type: "setError", error: err });

@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useStateValue } from "../../reducers/state";
-// import { requestRefreshAndAccessToken, sendLoginLink } from "../../io/issIO";
 import connectionManager from "../../io/connectionManager";
-// import { signIn } from "../../io/userIO";
-import { useApi } from "../../io/ApiProvider";
+import { useMargaret } from "../../io/MargaretProvider";
 import LoginDialog from "./LoginDialog";
 import LoginWaiting from "./LoginWaiting";
 import withDisplayNull from "../../aux/withDisplayNull";
@@ -14,7 +12,7 @@ const STAGE_DIALOG = 1;
 const STAGE_WAITING = 2;
 
 const Login = () => {
-  const apiService = useApi();
+  const margaret = useMargaret();
   const [{ copyRight, isOnline, appStatus, loginName, bearerToken }, dispatch] =
     useStateValue();
   const [stage, setStage] = useState(STAGE_SILENT);
@@ -63,15 +61,15 @@ const Login = () => {
         // Refresh Token を更新、新しい Access Token を取得する
         // Refresh Toiken は cokkie に保存されている HttpOnly なので Javascript からは取得できない
         // 新しい Access Token を connectionMgr に保存する
-        const newAccessToken = await apiService
-          .get("iss")
+        const newAccessToken = await margaret
+          .getApi("iss")
           .requestRefreshAndAccessToken({
             sub: username,
           });
         connectionManager.setToken(newAccessToken);
 
         // 新しい Access Token でログインする
-        const user = await apiService.get("user")["signIn"]({ username: username });
+        const user = await margaret.getApi("user")["signIn"]({ username: username });
         user.currFc = user.facilities[0].id; // uuid
         // User 設定を通知する
         if (user?.settings) {
@@ -112,7 +110,7 @@ const Login = () => {
   const handleSendLink = (email) => {
     const ayncSend = async (mail) => {
       try {
-        const res = await apiService.get("iss").sendLoginLink({ sub: mail });
+        const res = await margaret.getApi("iss").sendLoginLink({ sub: mail });
         // auth server response
         const { username, channel } = res;
         // Listen to the pusher channel

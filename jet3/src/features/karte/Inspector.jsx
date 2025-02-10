@@ -14,11 +14,10 @@ import Diagnosis from "./diagnosis/Dignosis";
 import Ping from "../ping/Ping";
 import withDisplayBlock from "../../aux/withDisplayBlock";
 import PastHistoryInfo from "./patient/PastHistoryInfo";
-import { getContinuedDisease } from "../../io/diagnosisIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { useStateValue } from "../../reducers/state";
 import { currFacility } from "../../models/karteCtx";
 import { useKarteState } from "./karteState";
-import { getEntities } from "../../io/riskIO";
 
 const MY_SECTIONS = [
   { id: v4(), name: "経過記録" },
@@ -34,6 +33,7 @@ const MY_SECTIONS = [
 // 右側: カルテ、病名、検査結果、初診時情報、文書
 // patient: 対象患者
 const Inspector = ({ patient }) => {
+  const margaret = useMargaret();
   const { user } = useStateValue()[0];
   const karteDispatch = useKarteState()[1];
   const [tabIndex, setTabIndex] = useState(0); // カルテ文書の切り替え
@@ -45,9 +45,9 @@ const Inspector = ({ patient }) => {
     const arr = [];
     const fc_id = currFacility(user).id;
     const pt_id = patient.id;
-    arr.push(getContinuedDisease(fc_id, pt_id));
-    arr.push(getEntities("allergy", fc_id, pt_id));
-    arr.push(getEntities("past_history", fc_id, pt_id));
+    arr.push(margaret.getApi("diagnosis").getContinuedDisease(fc_id, pt_id));
+    arr.push(margaret.getApi("risk").getEntities("allergy", fc_id, pt_id));
+    arr.push(margaret.getApi("risk").getEntities("past_history", fc_id, pt_id));
     Promise.all(arr)
       .then((res) => {
         const [disease, allergies, pastHistories] = res;

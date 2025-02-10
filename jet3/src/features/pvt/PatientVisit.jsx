@@ -3,7 +3,7 @@ import styled from "styled-components";
 import formatDate from "intl-dateformat";
 import { useStateValue } from "../../reducers/state";
 import { ageAt } from "../../util/dt2";
-import { deleteVisit, getPatientVisits, getVisitLock } from "../../io/pvtIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import { currFacility } from "../../models/karteCtx";
 import withDisplayNull from "../../aux/withDisplayNull";
 import { PVT_STATUS_SPEC, ROW_MENU_PVT } from "./pvtSpec";
@@ -72,6 +72,7 @@ const statusIcon = (lockedBy, status, newPatient, newHis) => {
 };
 
 const PatientVisit = () => {
+  const margaret = useMargaret();
   const [{ user, updateVisit }, dispatch] = useStateValue();
   const [visits, setVisits] = useState([]);
   const [currentStatus, setCurrentStatus] = useState({ numVisits: 0, waiting: 0, pending: 0, payment: 0, done: 0 });
@@ -81,7 +82,7 @@ const PatientVisit = () => {
   useEffect(() => {
     const asyncGet = async (fcId, date, limit, offset) => {
       try {
-        const results = await getPatientVisits(fcId, date, limit, offset);
+        const results = await margaret.getApi("pvt").getPatientVisits(fcId, date, limit, offset);
         // console.log(JSON.stringify(results, null, 3));
         // debugger;
         setVisits(results);
@@ -126,7 +127,7 @@ const PatientVisit = () => {
     if (action === "karte" || action === "accounting") {
       const asyncLock = async (fc_id, userName, visitId) => {
         try {
-          const lock = await getVisitLock(fc_id, userName, visitId);
+          const lock = await margaret.getApi("pvt").getVisitLock(fc_id, userName, visitId);
           if (!lock.lock) {
             return;
           }
@@ -156,7 +157,7 @@ const PatientVisit = () => {
     if (action === "delete") {
       const asyncDelete = async (fcId, pvtId) => {
         try {
-          await deleteVisit(fcId, pvtId);
+          await margaret.getApi("pvt").deleteVisit(fcId, pvtId);
         } catch (err) {
           dispatch({ type: "setError", error: err });
         }

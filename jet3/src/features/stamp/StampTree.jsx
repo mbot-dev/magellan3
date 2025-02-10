@@ -10,13 +10,7 @@ import {
   sortClaimItems,
 } from "../../models/claim";
 import { STAMP_NAME_LENGTH, STAMP_TREE_MENU } from "../../models/karteCtx";
-import {
-  getStampList,
-  saveStamp,
-  updateStamp,
-  deleteStamp,
-  updateStampOrder,
-} from "../../io/stampIO";
+import { useMargaret } from "../../io/MargaretProvider";
 import ContextMenu from "../../cmp/ContextMenu";
 import StampNameEditor from "./StampNameEditor";
 import { currFacility } from "../../models/karteCtx";
@@ -69,6 +63,7 @@ const DragStamp = ({ index, stampName, onDragStart, onDrop }) => {
 };
 
 const StampTree = ({ tab }) => {
+  const margaret = useMargaret();
   const [
     { appStatus, user, stampList, bundleArraySubmitted },
     dispatch,
@@ -92,7 +87,7 @@ const StampTree = ({ tab }) => {
     const facility_id = currFacility(user).id;
     const asyncGet = async (fcId, entity) => {
       try {
-        const results = await getStampList(fcId, entity);
+        const results = await margaret.getApi("stamp").getStampList(fcId, entity);
         const arr = [];
         results.forEach((entry) => {
           sortClaimItems(entry["claimItems"]); // sort
@@ -131,7 +126,7 @@ const StampTree = ({ tab }) => {
       if (idx === -1) {
         const newStamp = createStamp(bdl, hashValue, freq);
         addList.push(newStamp);
-        addPromise.push(saveStamp(newStamp));
+        addPromise.push(margaret.getApi("stamp").saveStamp(newStamp));
         freq += 1;
       }
     });
@@ -194,7 +189,7 @@ const StampTree = ({ tab }) => {
     if (item.action === "delete") {
       const doDelete = async (st) => {
         try {
-          await deleteStamp(st.id);
+          await margaret.getApi("stamp").deleteStamp(st.id);
           dispatch({
             type: "deleteStamp",
             entity: tab.entity,
@@ -231,7 +226,7 @@ const StampTree = ({ tab }) => {
     });
     const update = async (order) => {
       try {
-        await updateStampOrder(order);
+        await margaret.getApi("stamp").updateStampOrder(order);
         dispatch({ type: "reorderStamp", entity: tab.entity, list: newList });
       } catch (err) {
         dispatch({ type: "setError", error: err });
@@ -244,7 +239,7 @@ const StampTree = ({ tab }) => {
     const target = stampList[tab.entity][popIndex];
     const update = async (pk, data) => {
       try {
-        await updateStamp(pk, data);
+        await margaret.getApi("stamp").updateStamp(pk, data);
         dispatch({
           type: "updateStamp",
           entity: tab.entity,
