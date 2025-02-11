@@ -34,7 +34,7 @@ class PvtService {
     return await fetchGET(BASE_URL, params);
   }
 
-  async saveVisit(visit) {
+  async save(visit) {
     return await fetchPOST(BASE_URL, visit);
   }
 
@@ -50,7 +50,7 @@ class PvtService {
     return await fetchPUT(BASE_URL, { facilityId, pvtId, lockedBy: "" });
   }
 
-  async deleteVisit(facility_id, pvt_id) {
+  async delete(facility_id, pvt_id) {
     const path = `${BASE_URL}/${facility_id}/${pvt_id}`;
     return await fetchDELETE(path);
   }

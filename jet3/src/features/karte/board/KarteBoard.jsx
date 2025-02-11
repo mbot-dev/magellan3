@@ -721,20 +721,28 @@ const KarteBoard = ({ patient }) => {
       });
     }
     // 保存
-    const asyncPost = async (karte) => {
+    const asyncSave = async (karte) => {
       localDispatch({ type: "setStateTransition" });
+      const channel = `santei-${karte.id}`;
+      const evt = "magellan:santei-update";
+      const pusher = margaret.getApi("pusher");
       try {
-        await margaret.getApi("karte").postKarte(karte);
-        localDispatch({ type: "karteSaved" });
-        localDispatch({ type: "reset" });
+        pusher.subscribe(channel, evt, (data) => {
+          // console.log(`Pusher: ${data}`);
+          pusher.unsubscribe(channel);
+          localDispatch({ type: "karteSaved", payload: data.data_id });
+          localDispatch({ type: "reset" });
+        });
+        await margaret.getApi("karte").save(karte);
       } catch (err) {
         console.log(`Save karte Error ${err}`);
+        pusher.unsubscribe(channel);
         localDispatch({ type: "setTransitionErr", payload: err.message });
       }
     };
     if (isOnline) {
       console.log(JSON.stringify(karteToSave, null, 3));
-      asyncPost(karteToSave);
+      asyncSave(karteToSave);
     }
   };
 
@@ -773,7 +781,7 @@ const KarteBoard = ({ patient }) => {
       localDispatch({ type: "setStateTransition" });
       await margaret
         .getApi("karte")
-        .deleteKarte(pk)
+        .delete(pk)
         .then(() => {
           localDispatch({ type: "reset" });
         });

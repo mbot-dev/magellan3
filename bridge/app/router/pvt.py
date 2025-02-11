@@ -17,8 +17,6 @@ ATTR_CONTACTS = "contacts"
 ATTR_INSURANCES = "health_insurances"
 ATTR_PUBLICS = "public_insurances"
 
-DEVELOP = True
-
 
 def patient_ql(table, facility_id, name, sex1, birthdate):
     return f"""
@@ -93,22 +91,18 @@ async def nextPtNumber(conn, facility_id):
 
 
 async def get_lock(request):
+    """Lock PVT"""
     pool = get_pool(request.app)
     facility_id, user_name, pvt_id = [
         request.query_params[name] for name in ["facility_id", "user_name", "pvt_id"]
     ]
     async with pool().acquire() as conn:
-        # For developping
-        if DEVELOP:
-            sql = "update m_patient_visit set locked_by = $1 where id = $2"
-            await conn.execute(sql, user_name, pvt_id)
-            await send_pvt_event(facility_id, pvt_id)
-            return JSONResponse({"lock": True})
-
         sql = "select locked_by from m_patient_visit where id = $1"
-        lock = await conn.fetchval(sql, pvt_id)
-        if lock != "":
+        lock_owner = await conn.fetchval(sql, pvt_id)
+        if lock_owner != "":
+            #  Owner is
             return JSONResponse({"lock": False})
+        # No one is locking
         sql = "update m_patient_visit set locked_by = $1 where id = $2"
         await conn.execute(sql, user_name, pvt_id)
         await send_pvt_event(facility_id, pvt_id)

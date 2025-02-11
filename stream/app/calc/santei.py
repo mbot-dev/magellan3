@@ -61,14 +61,23 @@ class Santei:
                 await bridge.update_pvt_status(pvt_id, 'onPayment')
             
             # Push event
+            # push_data = {
+            #     'type': 'santei',
+            #     'patient_id': patient_id,
+            #     'pvt_id': pvt_id,
+            # }
+            # push_evt = {
+            #     'channel': f'pvt-{facility_id}',
+            #     'event': 'magellan:pvt-update',
+            #     'data': push_data
+            # }
             push_data = {
                 'type': 'santei',
-                'patient_id': patient_id,
-                'pvt_id': pvt_id,
+                'data_id': self.k_id,
             }
             push_evt = {
-                'channel': f'pvt-{facility_id}',
-                'event': 'magellan:pvt-update',
+                'channel': f'santei-{self.k_id}',
+                'event': 'magellan:santei-update',
                 'data': push_data
             }
             return push_evt

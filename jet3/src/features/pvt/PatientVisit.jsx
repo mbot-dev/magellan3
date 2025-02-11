@@ -127,10 +127,13 @@ const PatientVisit = () => {
     if (action === "karte" || action === "accounting") {
       const asyncLock = async (fc_id, userName, visitId) => {
         try {
+          // getLock = try to lock the visit
           const lock = await margaret.getApi("pvt").getVisitLock(fc_id, userName, visitId);
           if (!lock.lock) {
+            // Someone locked now
             return;
           }
+          // At this time the visit is locked by the user
           // Upside Down  visit has patient -> patient.hasVisit
           const { patient } = visit;
           const uPatient = JSON.parse(JSON.stringify(patient));
@@ -157,7 +160,7 @@ const PatientVisit = () => {
     if (action === "delete") {
       const asyncDelete = async (fcId, pvtId) => {
         try {
-          await margaret.getApi("pvt").deleteVisit(fcId, pvtId);
+          await margaret.getApi("pvt").delete(fcId, pvtId);
         } catch (err) {
           dispatch({ type: "setError", error: err });
         }

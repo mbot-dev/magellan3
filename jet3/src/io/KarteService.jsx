@@ -24,11 +24,11 @@ class KarteService {
     return await fetchGET(KARTE_BASE_URL, params);
   }
 
-  async postKarte(karte) {
+  async save(karte) {
     return await fetchPOST(KARTE_BASE_URL, karte); // no snake
   }
 
-  async deleteKarte(pk) {
+  async delete(pk) {
     const path = `${KARTE_BASE_URL}/${pk}`;
     return await fetchDELETE(path);
   }

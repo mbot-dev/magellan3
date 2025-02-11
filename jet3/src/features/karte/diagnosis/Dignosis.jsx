@@ -35,7 +35,7 @@ const Diagnosis = ({ patient }) => {
     }
     const asyncGet = async (fc_id, pt_id) => {
       try {
-        const list = await margaret.getApi("diagnosis").getDiagnosisList(fc_id, pt_id);
+        const list = await margaret.getApi("diagnosis").getList(fc_id, pt_id);
         fetched.current = true;
         karteDispatch({
           type: "setRiskList",
@@ -70,7 +70,7 @@ const Diagnosis = ({ patient }) => {
     }
     const asyncPut = async (risk) => {
       try {
-        await margaret.getApi("diagnosis").putDiagnosis(risk);
+        await margaret.getApi("diagnosis").update(risk);
         karteDispatch({
           type: "upcertRisk",
           payload: { entity: "diagnosis", risk },

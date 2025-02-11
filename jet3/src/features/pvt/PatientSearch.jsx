@@ -92,7 +92,7 @@ const PatientSearch = () => {
       const pvt = createPvt(patient, user);
       startTransition(async () => {
         try {
-          await margaret.getApi("pvt").saveVisit(pvt);
+          await margaret.getApi("pvt").save(pvt);
         } catch (err) {
           dispatch({ type: "setError", error: err });
         }
