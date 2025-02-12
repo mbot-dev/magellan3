@@ -6,9 +6,8 @@ const OqsFunc = require("./oqsFunc");
 const STATUS_PENDING = "pending";
 const STATUS_WATCHING = "watching";
 const STATUS_ERROR = "error";
-// const URL_TO_FACE =
-  // "https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1/pvt/face";
-  const URL_TO_FACE = "http://localhost:8066/karte/api/v1/pvt/face";
+const URL_TO_FACE = "https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1/pvt/face";
+// const URL_TO_FACE = "http://localhost:8066/karte/api/v1/pvt/face";
 const DEBUG = false;
 const DEBUG_PARSED = true;
 const POST = true;

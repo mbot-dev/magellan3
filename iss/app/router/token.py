@@ -208,7 +208,7 @@ async def refresh_token(request):
         
         return response
 
-# 院内ユーザー登録
+# 職員登録
 # 登録するユーザーへ招待メールを送る
 # 拒否するケース
 # case 1 管理者（院内ユーザーを登録できる）アカウントがない
@@ -269,7 +269,7 @@ async def send_add_user_link(request):
     db_redis.save_link(payload, expires_in)  # key=jti, value=json.dumps(payload)
 
     # Create verfication link
-    callback = os.getenv('VERYFY_ADD_USER_LINK')
+    callback = os.getenv('VERIFY_ADD_USER_LINK')
     link = f'{callback}?token={token}&mode=add_user'
 
     # Send user-add link via gmail
