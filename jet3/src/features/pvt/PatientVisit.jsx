@@ -41,11 +41,6 @@ const statusIcon = (lockedBy, status, newPatient, newHis) => {
       />
     );
   }
-  if (newPatient || newHis) {
-    return (
-      <FiAward size="22px" color={ORANGE} style={{ verticalAlign: "middle" }} />
-    );
-  }
   if (status === "waiting") {
     return (
       <MdOutlineWatchLater
@@ -67,6 +62,11 @@ const statusIcon = (lockedBy, status, newPatient, newHis) => {
   if (status === "done") {
     return (
       <FiFlag size="22px" color={ORANGE} style={{ verticalAlign: "middle" }} />
+    );
+  }
+  if (newPatient || newHis) {
+    return (
+      <FiAward size="22px" color={ORANGE} style={{ verticalAlign: "middle" }} />
     );
   }
 };
