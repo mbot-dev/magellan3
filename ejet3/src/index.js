@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const os = require('os')
 const process = require('process')
 const path = require('path')
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const { electronApp, optimizer, is } = require('@electron-toolkit/utils')
 const EventEmitter = require('events')
 const { debounce } = require('es-toolkit')
@@ -13,15 +14,18 @@ const evtEmitter = new EventEmitter()
 const watcher = new ResWatcher(evtEmitter)
 // const directoryToWatch = '/Volumes/windows11pc/shikaku'
 // const directoryToWatch = '\\MAGELLAN-WIN\share'
-const directoryToWatch = '/home/kazushi/develop/oqs/res'
-// const directoryToWatch = '/Users/kazushi/develop/oqs/res'
-const testURL = 'https://dashing-skunk-nominally.ngrok-free.app'
-const appURL = 'https://dashing-skunk-nominally.ngrok-free.app'
-// const testURL = 'http://localhost:8066'
-// const appURL = 'http://localhost:8066'
+const WIN_DIR_TO_WATCH = '/home/kazushi/develop/oqs/res'
+const MAC_DIR_TO_WATCH = '/Users/kazushi/develop/oqs/res'
+const LOCAL_URL = 'http://localhost:8066'
+const NGROK_URL = 'https://dashing-skunk-nominally.ngrok-free.app'
+const APP_NAME = 'Margaret'
+
+const whichURL = 'LOCAL' // || NGROK_URL
 
 const createWindow = () => {
+  const startUrl = whichURL === 'LOCAL' ? LOCAL_URL : NGROK_URL
   const { x, y, width, height } = store.getBounds()
+  
   mainWindow = new BrowserWindow({
     x: x,
     y: y,
@@ -33,7 +37,6 @@ const createWindow = () => {
     },
   })
 
-  const startUrl = is.dev ? testURL : appURL
   mainWindow
     .loadURL(startUrl)
     .then(() => {
@@ -58,7 +61,7 @@ const createWindow = () => {
   )
 }
 
-app.setName('Lilac')
+app.setName(APP_NAME)
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('app.user-lab.margaret')
@@ -87,6 +90,7 @@ app.on('will-quit', async () => {
 })
 
 evtEmitter.on('start-watching-res', () => {
+  const directoryToWatch = os.platform() === 'win32' ? WIN_DIR_TO_WATCH : MAC_DIR_TO_WATCH
   watcher.start(directoryToWatch)
 })
 

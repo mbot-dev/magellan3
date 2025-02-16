@@ -6,6 +6,8 @@ export const GlobalStyle = createGlobalStyle`
         --on-background: ${(props) => props.theme.onBackground};
         --surface: ${(props) => props.theme.surface};
         --on-surface: ${(props) => props.theme.onSurface};
+        --margaret: #ffeb3b;
+        --on-margaret: #313131;
         --primary: ${(props) => props.theme.primary};
         --on-primary: ${(props) => props.theme.onPrimary};
         --primary-selected: ${(props) => props.theme.primarySelected};

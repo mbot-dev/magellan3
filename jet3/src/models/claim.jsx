@@ -1611,10 +1611,13 @@ export const findSameItem = (test, p) => {
   const group = p.filter((x) => x.group === test.group);
   test.claimItems.forEach((item) => {
     group.forEach((bundle) => {
-      // const arr = bundle.claimItems.filter(x => x.type < 4 && x.code === item.code);  // 手技、医薬品、器材
+      // 手技、医薬品、器材 が対象
       const arr = bundle.claimItems.filter(
-        (x) => !x.drop && x.code === item.code,
-      ); // 0:false  用法、コメント=1
+        (x) => x.type < 4 && x.code === item.code,
+      );
+      // const arr = bundle.claimItems.filter(
+      //   (x) => !x.drop && x.code === item.code,
+      // ); // 0:false  用法、コメント=1
       if (arr.length > 0) {
         arr.forEach((ci) => {
           found.push(ci.name);

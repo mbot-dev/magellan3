@@ -213,19 +213,6 @@ export const boardReducer = (state, { type, payload }) => {
             mode: "reset",
           };
           break;
-        case "setStateTransition":
-          draft.boardState = TRANSITION;
-          draft.recoveryState = payload;
-          break;
-        case "setTransitionError":
-          draft.boardState = ERROR;
-          draft.transitionError = payload; // Show Dialog
-          break;
-        case "recoverState":
-          // Recover from Error
-          draft.transitionError = null; // Close dialog
-          draft.boardState = draft.recoveryState;
-          break;
         //-----------------------------------------------
         case "setSelected":
           if (draft.boardState === READY || draft.boardState === SELECTED) {
@@ -302,18 +289,25 @@ export const boardReducer = (state, { type, payload }) => {
           draft.boardState = EDIT_END;
           break;
         case "addBundle": {
-          // Stamp dropped || bundle　Editted -> add karte bundle(payload)
+          // Stamp dropped || bundle Editted -> add karte bundle(payload)
           const karteP = draft.karteList[draft.selectedIndex].p;
           const index = karteP.findIndex((x) => x.id === payload.id);
           if (index === -1) {
-            // 重複チェック --------------------------------
+            //--------------------------------------------
+            // 重複チェック claimItem の全数チェックが必要
+            // -------------------------------------------
             const found = findSameItem(payload, karteP);
-            if (found.length !== 0) {
-              // Injection....
-              // return;
+            if (found.length > 0) {
+              const msg = ["下記診療行為が重複しています。"];
+              found.forEach((x) => {
+                msg.push(x);
+              });
+              draft.alert = msg;
+              return;
             }
             //--------------------------------------------
             // 新規バンドル => カルテの P へ追加
+            //--------------------------------------------
             karteP.push(payload);
             sortBundles(karteP);
             // pivot へ追加
@@ -450,4 +444,3 @@ export const boardReducer = (state, { type, payload }) => {
     },
   );
 };
-

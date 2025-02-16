@@ -1,6 +1,6 @@
 {
   "name": "ejet3",
-  "productName": "マーガレット",
+  "productName": "Margaret",
   "version": "1.0.0",
   "description": "EHR application for the future",
   "main": "src/index.js",

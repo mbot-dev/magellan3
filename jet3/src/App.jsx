@@ -47,7 +47,7 @@ const SideBar = () => {
         ) : (
           <AppIcon
             key={i}
-            className={selected ? "w3-yellow" : "w3-hover-text-black"}
+            className={selected ? "z3-margaret" : "w3-hover-text-black"}
             style={{ "--txt": `'${m.label}'` }}
             onClick={() => handleClick(m.path)}
             disabled={appStatus !== "login"}

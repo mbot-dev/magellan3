@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useTransition } from "react";
 import styled from "styled-components";
 import { v4 } from "uuid";
 import sanitizeHtml from "sanitize-html";
@@ -86,7 +86,6 @@ const AccountingBoard = ({ patient }) => {
       pivot,
       receiptPivot,
       selectedIndex,
-      transitionError,
       alert,
       karteToDiscard,
       soaText,
@@ -103,15 +102,13 @@ const AccountingBoard = ({ patient }) => {
   const clerk = useClerk(user);
   const element = useRef(undefined);
   const receiptRef = useRef(undefined);
+  const [isPending, startTransition] = useTransition();
 
   useIntersectionObserver(element, 0.1, () => {
     localDispatch({ type: "nextPage" });
   });
 
   useEffect(() => {
-    if (!patient.id || !facility || !render || !fetchMode || !user) {
-      return;
-    }
     const asyncGet = async (
       mode,
       fc_id,
@@ -119,7 +116,7 @@ const AccountingBoard = ({ patient }) => {
       limit,
       offset,
       client_order,
-      render
+      render,
     ) => {
       try {
         const result = await margaret
@@ -133,24 +130,29 @@ const AccountingBoard = ({ patient }) => {
           localDispatch({ type: "appendKarte", payload: result });
         }
       } catch (err) {
-        localDispatch({ type: "setTransitionError", payload: err.message });
+        dispatch({ type: "setError", error: err });
       }
     };
+    if (!patient.id || !facility || !render || !fetchMode || !user) {
+      return;
+    }
     const { currPage, mode } = fetchMode;
     const facility_id = facility.id;
     const patient_id = patient.id;
     const limit = PAGE_SIZE;
     const offset = (currPage - 1) * PAGE_SIZE;
     const client_order = DESC ? "desc" : "asc";
-    asyncGet(
-      mode,
-      facility_id,
-      patient_id,
-      limit,
-      offset,
-      client_order,
-      render
-    );
+    startTransition(() => {
+      asyncGet(
+        mode,
+        facility_id,
+        patient_id,
+        limit,
+        offset,
+        client_order,
+        render,
+      );
+    });
   }, [patient.id, facility, user, render, fetchMode, patient?.visit?.id]);
 
   useEffect(() => {
@@ -212,6 +214,24 @@ const AccountingBoard = ({ patient }) => {
 
   // 保存
   const handleSave = () => {
+    // 保存
+    const asyncSave = async (karte) => {
+      const channel = `santei-${karte.id}`;
+      const evt = "magellan:santei-update";
+      const pusher = margaret.getApi("pusher");
+      try {
+        pusher.subscribe(channel, evt, (data) => {
+          pusher.unsubscribe(channel);
+          localDispatch({ type: "karteSaved", payload: data.data_id });
+          localDispatch({ type: "reset" });
+        });
+        await margaret.getApi("karte").save(karte);
+      } catch (err) {
+        pusher.unsubscribe(channel);
+        dispatch({ type: "setError", error: err });
+      }
+    };
+
     // 保存対象のカルテ
     const target = karteList[selectedIndex]; // Index
     // 病名があるか?
@@ -393,32 +413,9 @@ const AccountingBoard = ({ patient }) => {
         batchNo += 1;
       });
     }
-    // 保存
-    const asyncPost = async (karte) => {
-      localDispatch({ type: "setStateTransition" });
-      const channel = `santei-${karte.id}`;
-      const evt = "magellan:santei-update";
-      const pusher = margaret.getApi("pusher");
-      try {
-        pusher.subscribe(channel, evt, (data) => {
-          // console.log(`Pusher: ${data}`);
-          pusher.unsubscribe(channel);
-          localDispatch({ type: "karteSaved", payload: data.data_id });
-          localDispatch({ type: "reset" });
-        });
-        await margaret.getApi("karte").save(karte);
-      } catch (err) {
-        console.log(`Save karte Error ${err}`);
-        pusher.unsubscribe(channel);
-        localDispatch({ type: "setTransitionErr", payload: err.message });
-      }
-    };
-    if (isOnline) {
-      if (DEBUG) {
-        console.log(JSON.stringify(karteToSave, null, 3));
-      }
-      asyncPost(karteToSave);
-    }
+    startTransition(() => {
+      asyncSave(karteToSave);
+    });
   };
 
   // Discard ?
@@ -643,8 +640,8 @@ const AccountingBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(dual-cell-width)"
                             : render === "receipt"
-                            ? "var(receipt-cell-width)"
-                            : "var(data-cell-width)",
+                              ? "var(receipt-cell-width)"
+                              : "var(data-cell-width)",
                         "--bk": selected ? "var(--primary)" : "var(--karte)",
                         "--on-bk": selected
                           ? "var(--on-primary)"
@@ -686,8 +683,8 @@ const AccountingBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(--dual-cell-width)"
                             : render === "receipt"
-                            ? "var(--receipt-cell-width)"
-                            : "var(--data-cell-width)",
+                              ? "var(--receipt-cell-width)"
+                              : "var(--data-cell-width)",
                         "--bk": settings.isSoaColoring
                           ? "var(--soa)"
                           : "var(--karte)",
@@ -708,8 +705,8 @@ const AccountingBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(--dual-cell-width)"
                             : render === "receipt"
-                            ? "var(--receipt-cell-width)"
-                            : "var(--data-cell-width)",
+                              ? "var(--receipt-cell-width)"
+                              : "var(--data-cell-width)",
                         "--bk": settings.isSoaColoring
                           ? "var(--soa)"
                           : "var(--karte)",
@@ -750,8 +747,8 @@ const AccountingBoard = ({ patient }) => {
                               render === "dual"
                                 ? "var(--dual-cell-width)"
                                 : render === "receipt"
-                                ? "var(--receipt-cell-width)"
-                                : "var(--data-cell-width)",
+                                  ? "var(--receipt-cell-width)"
+                                  : "var(--data-cell-width)",
                           }}
                         >
                           {value}
@@ -793,16 +790,6 @@ const AccountingBoard = ({ patient }) => {
             </div>
           </div>
         </div>
-      )}
-      {transitionError && (
-        <SimpleAlert
-          width="384px"
-          onCancel={() => localDispatch({ type: "recoverState" })}
-        >
-          {transitionError.map((msg, i) => {
-            return <p key={i}>{msg}</p>;
-          })}
-        </SimpleAlert>
       )}
       {alert && (
         <SimpleAlert

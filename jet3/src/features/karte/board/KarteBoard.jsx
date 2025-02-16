@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useTransition } from "react";
 import styled from "styled-components";
 import { v4 } from "uuid";
 import sanitizeHtml from "sanitize-html";
@@ -121,7 +121,6 @@ const KarteBoard = ({ patient }) => {
       sortedPivot,
       receiptPivot,
       selectedIndex,
-      transitionError,
       alert,
       karteToDiscard,
       karteToDelete,
@@ -138,15 +137,13 @@ const KarteBoard = ({ patient }) => {
   const facility = useFacility(user);
   const clerk = useClerk(user);
   const element = useRef(undefined);
+  const [isPending, startTransition] = useTransition();
 
   useIntersectionObserver(element, 0.1, () => {
     localDispatch({ type: "nextPage" });
   });
 
   useEffect(() => {
-    if (!patient.id || !facility || !render || !fetchMode || !user) {
-      return;
-    }
     const asyncGet = async (
       mode,
       fc_id,
@@ -154,7 +151,7 @@ const KarteBoard = ({ patient }) => {
       limit,
       offset,
       client_order,
-      render
+      render,
     ) => {
       try {
         const result = await margaret
@@ -168,24 +165,29 @@ const KarteBoard = ({ patient }) => {
           localDispatch({ type: "appendKarte", payload: result });
         }
       } catch (err) {
-        localDispatch({ type: "setTransitionError", payload: err.message });
+        dispatch({ type: "setError", error: err });
       }
     };
+    if (!patient.id || !facility || !render || !fetchMode || !user) {
+      return;
+    }
     const { currPage, mode } = fetchMode;
     const facility_id = facility.id;
     const patient_id = patient.id;
     const limit = PAGE_SIZE;
     const offset = (currPage - 1) * PAGE_SIZE;
     const client_order = DESC ? "desc" : "asc";
-    asyncGet(
-      mode,
-      facility_id,
-      patient_id,
-      limit,
-      offset,
-      client_order,
-      render
-    );
+    startTransition(() => {
+      asyncGet(
+        mode,
+        facility_id,
+        patient_id,
+        limit,
+        offset,
+        client_order,
+        render,
+      );
+    });
   }, [patient.id, facility, user, render, fetchMode]);
 
   useEffect(() => {
@@ -331,7 +333,7 @@ const KarteBoard = ({ patient }) => {
         selectedDept,
         selectedHis,
         isClerk,
-        importActive
+        importActive,
       );
       return;
     }
@@ -341,7 +343,7 @@ const KarteBoard = ({ patient }) => {
         selectedDept,
         selectedHis,
         isClerk,
-        importActive
+        importActive,
       );
       return;
     }
@@ -351,7 +353,7 @@ const KarteBoard = ({ patient }) => {
         selectedDept,
         selectedHis,
         isClerk,
-        importActive
+        importActive,
       );
     }
   };
@@ -368,7 +370,7 @@ const KarteBoard = ({ patient }) => {
     selectedDept,
     selectedHis,
     isClerk,
-    importActive = false
+    importActive = false,
   ) => {
     const activeDiag = importActive ? createActiveDiagnosis() : [];
     const newKarte = newKarteContext(
@@ -377,7 +379,7 @@ const KarteBoard = ({ patient }) => {
       selectedDoctor,
       selectedDept,
       selectedHis,
-      isClerk ? clerk : null
+      isClerk ? clerk : null,
     ); // 新規カルテのcontext情報
     const empty = "";
     newKarte.soa = { content: empty }; // SAOは空  maby no need
@@ -395,7 +397,7 @@ const KarteBoard = ({ patient }) => {
     selectedDept,
     selectedHis,
     isClerk,
-    importActive = false
+    importActive = false,
   ) => {
     // アクティブ病名
     const myP = importActive ? createActiveDiagnosis() : [];
@@ -434,7 +436,7 @@ const KarteBoard = ({ patient }) => {
         selectedDoctor,
         selectedDept,
         selectedHis,
-        isClerk ? clerk : null
+        isClerk ? clerk : null,
       );
       const empty = "";
       newKarte.soa = { content: empty };
@@ -463,7 +465,7 @@ const KarteBoard = ({ patient }) => {
       selectedDoctor,
       selectedDept,
       selectedHis,
-      isClerk ? clerk : null
+      isClerk ? clerk : null,
     );
     const empty = "";
     newKarte.soa = { content: empty }; // SOAは空 -> maybe no need
@@ -480,7 +482,7 @@ const KarteBoard = ({ patient }) => {
     selectedDept,
     selectedHis,
     isClerk,
-    importActive = false
+    importActive = false,
   ) => {
     const myP = importActive ? createActiveDiagnosis() : [];
     const targetIndex = DESC ? 0 : karteList.length - 1;
@@ -502,7 +504,7 @@ const KarteBoard = ({ patient }) => {
       selectedDoctor,
       selectedDept,
       selectedHis,
-      isClerk ? clerk : null
+      isClerk ? clerk : null,
     );
     newKarte.soa = copy.soa;
     newKarte.p = myP;
@@ -533,6 +535,23 @@ const KarteBoard = ({ patient }) => {
 
   // 保存
   const handleSave = () => {
+    // 保存
+    const asyncSave = async (karte) => {
+      const channel = `santei-${karte.id}`;
+      const evt = "magellan:santei-update";
+      const pusher = margaret.getApi("pusher");
+      try {
+        pusher.subscribe(channel, evt, (data) => {
+          pusher.unsubscribe(channel);
+          localDispatch({ type: "karteSaved", payload: data.data_id });
+          localDispatch({ type: "reset" });
+        });
+        await margaret.getApi("karte").save(karte);
+      } catch (err) {
+        pusher.unsubscribe(channel);
+        dispatch({ type: "setError", error: err });
+      }
+    };
     // 保存対象のカルテ
     const target = karteList[selectedIndex]; // Index
     // 病名があるか?
@@ -720,30 +739,10 @@ const KarteBoard = ({ patient }) => {
         batchNo += 1;
       });
     }
-    // 保存
-    const asyncSave = async (karte) => {
-      localDispatch({ type: "setStateTransition" });
-      const channel = `santei-${karte.id}`;
-      const evt = "magellan:santei-update";
-      const pusher = margaret.getApi("pusher");
-      try {
-        pusher.subscribe(channel, evt, (data) => {
-          // console.log(`Pusher: ${data}`);
-          pusher.unsubscribe(channel);
-          localDispatch({ type: "karteSaved", payload: data.data_id });
-          localDispatch({ type: "reset" });
-        });
-        await margaret.getApi("karte").save(karte);
-      } catch (err) {
-        console.log(`Save karte Error ${err}`);
-        pusher.unsubscribe(channel);
-        localDispatch({ type: "setTransitionErr", payload: err.message });
-      }
-    };
-    if (isOnline) {
-      console.log(JSON.stringify(karteToSave, null, 3));
+    console.log(JSON.stringify(karteToSave, null, 3));
+    startTransition(() => {
       asyncSave(karteToSave);
-    }
+    });
   };
 
   // Discard ?
@@ -775,18 +774,20 @@ const KarteBoard = ({ patient }) => {
 
   // Select delete
   const handleDelete = () => {
-    localDispatch({ type: "deleteKarte" });
     // 単純選択のカルテを削除
-    const doDelete = async (pk) => {
-      localDispatch({ type: "setStateTransition" });
-      await margaret
-        .getApi("karte")
-        .delete(pk)
-        .then(() => {
-          localDispatch({ type: "reset" });
-        });
+    localDispatch({ type: "deleteKarte" }); // => karte to delete = null
+    // 単純選択のカルテを削除
+    const asyncDelete = async (pk) => {
+      try {
+        await margaret.getApi("karte").delete(pk);
+        localDispatch({ type: "reset" });
+      } catch (err) {
+        dispatch({ type: "setError", error: err });
+      }
     };
-    doDelete(karteToDelete.id).catch((err) => console.log(err));
+    startTransition(() => {
+      asyncDelete(karteToDelete.id);
+    });
   };
 
   const handleSelectKarte = (e) => {
@@ -968,8 +969,8 @@ const KarteBoard = ({ patient }) => {
                         render === "dual"
                           ? "var(dual-cell-width)"
                           : render === "receipt"
-                          ? "var(receipt-cell-width)"
-                          : "var(data-cell-width)",
+                            ? "var(receipt-cell-width)"
+                            : "var(data-cell-width)",
                       "--bk": selected ? "var(--primary)" : "var(--karte)",
                       "--on-bk": selected
                         ? "var(--on-primary)"
@@ -1037,8 +1038,8 @@ const KarteBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(--dual-cell-width)"
                             : render === "receipt"
-                            ? "var(--receipt-cell-width)"
-                            : "var(--data-cell-width)",
+                              ? "var(--receipt-cell-width)"
+                              : "var(--data-cell-width)",
                         "--bk": settings.isSoaColoring
                           ? "var(--soa)"
                           : "var(--karte)",
@@ -1059,8 +1060,8 @@ const KarteBoard = ({ patient }) => {
                           render === "dual"
                             ? "var(--dual-cell-width)"
                             : render === "receipt"
-                            ? "var(--receipt-cell-width)"
-                            : "var(--data-cell-width)",
+                              ? "var(--receipt-cell-width)"
+                              : "var(--data-cell-width)",
                         "--bk": settings.isSoaColoring
                           ? "var(--soa)"
                           : "var(--karte)",
@@ -1106,8 +1107,8 @@ const KarteBoard = ({ patient }) => {
                             render === "dual"
                               ? "var(--dual-cell-width)"
                               : render === "receipt"
-                              ? "var(--receipt-cell-width)"
-                              : "var(--data-cell-width)",
+                                ? "var(--receipt-cell-width)"
+                                : "var(--data-cell-width)",
                         }}
                       >
                         {value}
@@ -1121,16 +1122,6 @@ const KarteBoard = ({ patient }) => {
         </MyTable>
         {DESC && <Observable ref={element} />}
       </Board>
-      {transitionError && (
-        <SimpleAlert
-          width="384px"
-          onCancel={() => localDispatch({ type: "recoverState" })}
-        >
-          {transitionError.map((msg, i) => {
-            return <p key={i}>{msg}</p>;
-          })}
-        </SimpleAlert>
-      )}
       {alert && (
         <SimpleAlert
           width="384px"
@@ -1154,7 +1145,7 @@ const KarteBoard = ({ patient }) => {
           messages={[
             `${dateFormat(
               karteToDelete.createdAt,
-              "yyyy-m-d"
+              "yyyy-m-d",
             )}のカルテを削除しますか?`,
           ]}
           onDainger={handleDelete}

@@ -10,8 +10,10 @@ const URL_TO_FACE = 'https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1
 // const URL_TO_FACE = 'http://localhost:8066/karte/api/v1/pvt/face'
 const DEBUG = false
 const DEBUG_PARSED = true
-const POST = true
+const POST = false
 const DELETE = true
+
+// 40 47 50 55
 
 // 被保険者証一部負担金割合 = 数値 ただし 1割負担=010 等に設定されている
 // 上記以外は全て文字列
@@ -65,7 +67,7 @@ const ResultOfQualificationConfirmation = [
   { name: '被保険者証番号', key: 'InsuredIdentificationNumber' },
   { name: '被保険者証枝番', key: 'InsuredBranchNumber' },
   { name: '本人・家族の別', key: 'PersonalFamilyClassification' }, // 1: 本人  2: 家族
-  { name: '被保険者氏名(世帯主氏名)', key: 'InsuredName' },
+  { name: '被保険者氏名(世帯主氏名)', keyqq: 'InsuredName' },
   { name: '氏名', key: 'Name' },
   { name: '氏名（その他）', key: 'NameOfOther' },
   { name: '氏名カナ', key: 'NameKana' },
@@ -345,6 +347,10 @@ class ResWatcher {
     this.oqsFunc = new OqsFunc()
   }
 
+  sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
   start(directoryToWatch) {
     console.log(`Watching ${directoryToWatch} will start...`)
     if (!fs.existsSync(directoryToWatch)) {
@@ -363,11 +369,12 @@ class ResWatcher {
       if (evt !== 'add' || !path.endsWith('.xml')) {
         return
       }
+      this.sleep(1000)  // wait for file read
       fs.readFile(path, 'utf8', (error, data) => {
         if (error) {
           console.log(`fs.readFile ${error}`)
         } else {
-          this.handleXml(data, path)
+          this.parse(data, path)
         }
       })
     })
@@ -415,7 +422,7 @@ class ResWatcher {
     })
   }
 
-  async handleXml(data, path) {
+  async parse(data, path) {
     try {
       const text = convert.xml2json(data, { compact: true, spaces: 4 }) // this.parser.parse(data)
       const json = JSON.parse(text)
@@ -446,24 +453,25 @@ class ResWatcher {
       this.extract2(header, HEADER_ELEMENTS, visit)
       // Parse Body
       const body = json['XmlMsg']?.['MessageBody']
-      if (body) {
-        if (body?.['QualificationConfirmSearchInfo']) {
-          const ele = body['QualificationConfirmSearchInfo']
-          this.extract2(ele, QualificationConfirmSearchInfo, visit)
-        }
-        this.extract2(body, BODY_ELEMENYS, visit)
-
-        const resultList = body['ResultList']
-        if (resultList) {
-          const ele = resultList['ResultOfQualificationConfirmation']
-          this.extract2(ele, ResultOfQualificationConfirmation, visit)
-        }
+      if (!body) {
+        return
+      }
+      if (body['QualificationConfirmSearchInfo']) {
+        const ele = body['QualificationConfirmSearchInfo']
+        this.extract2(ele, QualificationConfirmSearchInfo, visit)
       }
 
+      this.extract2(body, BODY_ELEMENYS, visit)
+
+      if (body['ResultList']) {
+        const resultList = body['ResultList']
+        const ele = resultList['ResultOfQualificationConfirmation']
+        this.extract2(ele, ResultOfQualificationConfirmation, visit)
+      }
       // Summry
       console.log('........................................')
       Check.forEach((attr) => {
-        const { name, key, func, arg } = attr
+        const { name, key, func, arg } = attr        
         if (func) {
           const args = arg ? arg.map((a) => visit[a]) : []
           const val = this.oqsFunc[func](...args)
