@@ -92,19 +92,12 @@ const ADDITIONAL_ATTRIBUTES = [
 const READY = "ready";
 const SELECTED = "selected";
 const EDITING = "editing";
-const EDIT_END = "editEnd";
+const EDIT_END = "editEnd"; // Use with dirty
 
 const KarteBoard = ({ patient }) => {
   const margaret = useMargaret();
   const [
-    {
-      bundleArraySubmitted,
-      bundleCopied,
-      user,
-      isOnline,
-      showWhiteQR,
-      settings,
-    },
+    { bundleArraySubmitted, bundleCopied, user, showWhiteQR, settings },
     dispatch,
   ] = useStateValue();
   const [{ continuedDisease }, karteDispath] = useKarteState();
