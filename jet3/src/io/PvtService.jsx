@@ -46,22 +46,22 @@ class PvtService {
     return await fetchPUT(BASE_URL, { facilityId, pvtId, status });
   }
 
-  async unlockVisit(facilityId, pvtId) {
-    return await fetchPUT(BASE_URL, { facilityId, pvtId, lockedBy: "" });
-  }
-
   async delete(facility_id, pvt_id) {
     const path = `${BASE_URL}/${facility_id}/${pvt_id}`;
     return await fetchDELETE(path);
   }
 
-  async getVisitLock(facility_id, user_name, pvt_id) {
+  async getLock(facility_id, user_name, pvt_id) {
     const params = {
       facility_id,
       user_name,
       pvt_id,
     };
     return await fetchGET(`${BASE_URL}/lock`, params);
+  }
+
+  async unlock(facilityId, pvtId) {
+    return await fetchPUT(BASE_URL, { facilityId, pvtId, lockedBy: "" });
   }
 }
 

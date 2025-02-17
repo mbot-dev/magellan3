@@ -128,7 +128,7 @@ const PatientVisit = () => {
       const asyncLock = async (fc_id, userName, visitId) => {
         try {
           // getLock = try to lock the visit
-          const lock = await margaret.getApi("pvt").getVisitLock(fc_id, userName, visitId);
+          const lock = await margaret.getApi("pvt").getLock(fc_id, userName, visitId);
           if (!lock.lock) {
             // Someone locked now
             return;
@@ -156,6 +156,17 @@ const PatientVisit = () => {
         }
       };
       asyncLock(currFacility(user).id, user.fullName, visit.id);
+    }
+    if (action === "unlock") {
+      const asyncUnlock = async (fcId, pvtId) => {
+        try {
+          await margaret.getApi("pvt").unlock(fcId, pvtId);
+        } catch (err) {
+          dispatch({ type: "setError", error: err });
+        }
+      };
+      const facilityId = currFacility(user).id;
+      asyncUnlock(facilityId, visit.id);
     }
     if (action === "delete") {
       const asyncDelete = async (fcId, pvtId) => {

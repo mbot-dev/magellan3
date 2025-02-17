@@ -36,7 +36,7 @@ const KarteTab = () => {
     }
     const asyncClose = async (fc_id, pvt_id) => {
       try {
-        await margaret.getApi("pvt").unlockVisit(fc_id, pvt_id);
+        await margaret.getApi("pvt").unlock(fc_id, pvt_id);
       } catch (err) {
         dispatch({ type: "setError", error: err });
       }

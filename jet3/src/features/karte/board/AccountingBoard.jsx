@@ -51,7 +51,6 @@ import AccountingDetail from "./AccountingDetail";
 
 const DESC = true;
 const PAGE_SIZE = 6;
-const DEBUG = false;
 
 const ADDITIONAL_ATTRIBUTES = [
   { label: "受診時年齢", attr: "ageAt", id: v4(), border: true },
@@ -70,7 +69,7 @@ const EDIT_END = "editEnd";
 const AccountingBoard = ({ patient }) => {
   const margaret = useMargaret();
   const [
-    { bundleArraySubmitted, bundleCopied, user, isOnline, settings },
+    { bundleArraySubmitted, bundleCopied, user, settings },
     dispatch,
   ] = useStateValue();
   const karteDispath = useKarteState()[1];
@@ -101,7 +100,7 @@ const AccountingBoard = ({ patient }) => {
   const facility = useFacility(user);
   const clerk = useClerk(user);
   const element = useRef(undefined);
-  const receiptRef = useRef(undefined);
+  const contentRef = useRef(undefined);
   const [isPending, startTransition] = useTransition();
 
   useIntersectionObserver(element, 0.1, () => {
@@ -529,11 +528,48 @@ const AccountingBoard = ({ patient }) => {
     asyncPut(facilityId, pvtId, "done");
   };
 
+  const isModifyOk = () => {
+    let ok = true;
+    ok = ok && boardState === SELECTED;
+    ok = ok && render === "dual";
+    return ok;
+  };
+
+  const isUndoOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    ok = ok && boardState !== soaEditing;
+    ok = ok && canUndo;
+    return ok;
+  };
+
+  const isdRedoOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    ok = ok && boardState !== soaEditing;
+    ok = ok && canRedo;
+    return ok;
+  };
+
+  const isSaveOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    ok = ok && (render === "dual");
+    return ok;
+  };
+
+  const isDiscardOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    return ok;
+  };
+
   const isInvoiceOk = () => {
     let ok = true;
     ok = ok && render === "dual";
     ok = ok && boardState === SELECTED;
-    return ok || receiptMode === "receipt";
+    // return ok || receiptMode === "receipt";
+    return ok;
   };
 
   const isReceiptOk = () => {
@@ -550,9 +586,7 @@ const AccountingBoard = ({ patient }) => {
     return ok;
   };
 
-  const handlePrint = useReactToPrint({
-    content: () => receiptRef.current,
-  });
+  const handlePrint = useReactToPrint({ contentRef: contentRef });
 
   return (
     <Layout className="z3-karte">
@@ -562,28 +596,24 @@ const AccountingBoard = ({ patient }) => {
       >
         <button
           className="w3-button w3-round-small"
-          disabled={
-            boardState !== SELECTED ||
-            boardState === EDITING ||
-            render !== "dual"
-          }
+          disabled={!isModifyOk()}
           onClick={handleModifyKarte}
         >
           {MODIFY}
         </button>
         <UndoButton
           size="18px"
-          disabled={soaEditing || !canUndo}
+          disabled={!isUndoOk()}
           onClick={handleUndo}
         />
         <RedoButton
           size="18px"
-          disabled={soaEditing || !canRedo}
+          disabled={!isdRedoOk()}
           onClick={handleRedo}
         />
         <button
           className="w3-button w3-round-small"
-          disabled={boardState !== EDITING}
+          disabled={!isSaveOk()}
           onClick={handleSave}
         >
           {SAVE_TEXT}
@@ -591,7 +621,7 @@ const AccountingBoard = ({ patient }) => {
         {boardState === EDITING && (
           <button
             className="w3-button w3-hover-red w3-round-small"
-            disabled={false}
+            disabled={!isDiscardOk()}
             onClick={showDiscardAlert}
           >
             {DISCARD_TEXT}
@@ -765,7 +795,7 @@ const AccountingBoard = ({ patient }) => {
       )}
       {render === "receipt" && (
         <div style={{ maxHeight: "calc(100vh - 100px)", overflow: "scroll" }}>
-          <div ref={receiptRef} className="z3-print-ref">
+          <div ref={contentRef} className="z3-print-ref">
             <div className="z3-receipt-size z3-break-before z3-inside-avoid">
               <AccountingInvoice
                 facility={facility}

@@ -58,6 +58,8 @@ export const ROW_MENU_PVT = [
   { action: 'karte', name: 'カルテ' },
   { action: 'accounting', name: '会計' },
   { name: '--' },
+  { action: 'unlock', name: 'ロック解除', destructive: true },
+  { name: '--' },
   { action: 'delete', name: '削除', destructive: true }
 ];
 

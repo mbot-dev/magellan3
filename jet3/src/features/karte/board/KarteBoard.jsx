@@ -89,6 +89,7 @@ const ADDITIONAL_ATTRIBUTES = [
   { label: "バージョン", attr: "revision", id: v4() },
 ];
 
+// Bboard States  below + isPending
 const READY = "ready";
 const SELECTED = "selected";
 const EDITING = "editing";
@@ -857,6 +858,68 @@ const KarteBoard = ({ patient }) => {
     localDispatch({ type: "testPop", payload: null });
   };
 
+  const isNewKarteOk = () => {
+    let ok = !isPending;
+    ok = ok && (boardState === READY || boardState === SELECTED);
+    ok = ok && render === "mosaic";
+    return ok;
+  };
+
+  const isSaveOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    ok = ok && (render === "mosaic" || render === "dual");
+    return ok;
+  };
+
+  const isModifyOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === SELECTED;
+    ok = ok && (render === "mosaic" || render === "dual");
+    return ok;
+  };
+
+  const isDeleteOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === SELECTED;
+    ok = ok && render === "mosaic";
+    return ok;
+  };
+
+  const isDiscardOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    return ok;
+  };
+
+  const isStampMakerOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    return ok;
+  };
+
+  const isModeCangeOk = () => {
+    let ok = !isPending;
+    ok = ok && (boardState === READY || boardState === SELECTED);
+    return ok;
+  };
+
+  const isUndoOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    ok = ok && boardState !== soaEditing;
+    ok = ok && canUndo;
+    return ok;
+  };
+
+  const isdRedoOk = () => {
+    let ok = !isPending;
+    ok = ok && boardState === EDITING;
+    ok = ok && boardState !== soaEditing;
+    ok = ok && canRedo;
+    return ok;
+  };
+
   return (
     <Layout className="z3-karte">
       <div
@@ -869,12 +932,7 @@ const KarteBoard = ({ patient }) => {
       >
         <button
           className="w3-button w3-round-small"
-          disabled={
-            !(
-              (boardState === READY || boardState === SELECTED) &&
-              render === "mosaic"
-            )
-          }
+          disabled={!isNewKarteOk()}
           onClick={handleNewKarte}
         >
           <AddStyle>
@@ -884,24 +942,24 @@ const KarteBoard = ({ patient }) => {
         </button>
         <UndoButton
           size="18px"
-          disabled={soaEditing || !canUndo}
+          disabled={!isUndoOk()}
           onClick={handleUndo}
         />
         <RedoButton
           size="18px"
-          disabled={soaEditing || !canRedo}
+          disabled={!isdRedoOk()}
           onClick={handleRedo}
         />
         <button
           className="w3-button w3-round-small"
-          disabled={boardState !== EDITING}
+          disabled={!isSaveOk()}
           onClick={handleSave}
         >
           {SAVE_TEXT}
         </button>
         <button
           className="w3-button w3-round-small"
-          disabled={!(boardState === SELECTED && render !== "receipt")}
+          disabled={!isModifyOk()}
           onClick={handleModifyKarte}
         >
           {MODIFY}
@@ -909,7 +967,7 @@ const KarteBoard = ({ patient }) => {
         {boardState !== EDITING && (
           <button
             className="w3-button w3-hover-red w3-round-small"
-            disabled={!(boardState === SELECTED && render === "mosaic")}
+            disabled={!isDeleteOk()}
             onClick={showDeleteAlert}
           >
             {DELETE_TEXT}
@@ -918,17 +976,17 @@ const KarteBoard = ({ patient }) => {
         {boardState === EDITING && (
           <button
             className="w3-button w3-hover-red w3-round-small"
-            disabled={false}
+            disabled={!isDiscardOk()}
             onClick={showDiscardAlert}
           >
             {DISCARD_TEXT}
           </button>
         )}
         <div className="z3-flex-glue" />
-        <StampSearcher disabled={boardState !== EDITING} />
+        <StampSearcher disabled={!isStampMakerOk()} />
         <button
           className="w3-button w3-round-large w3-padding-small"
-          disabled={boardState !== EDITING}
+          disabled={!isStampMakerOk()}
           onClick={handleOpenStampMaker}
         >
           {TEXT_ADD_PROCEDURE}
@@ -938,7 +996,7 @@ const KarteBoard = ({ patient }) => {
         <MosaicSelector2
           options={RENDER_OPTIONS}
           myRender={render || "mosaic"}
-          disabled={boardState === EDITING}
+          disabled={!isModeCangeOk()}
           localDispatch={localDispatch}
           right={true}
         />
