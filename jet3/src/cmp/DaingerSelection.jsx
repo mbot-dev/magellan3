@@ -32,7 +32,7 @@ const DaingerSelection = ({
     onCancel();
   };
 
-  const handleDelete = () => {
+  const handleDainger = () => {
     onDainger();
   };
 
@@ -62,7 +62,7 @@ const DaingerSelection = ({
               <button
                 className="w3-button w3-round w3-block w3-border w3-red"
                 type="button"
-                onClick={handleDelete}
+                onClick={handleDainger}
               >
                 {daingerText}
               </button>

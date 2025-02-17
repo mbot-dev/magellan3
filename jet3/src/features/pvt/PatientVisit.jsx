@@ -20,6 +20,8 @@ import { MdOutlineWatchLater } from "react-icons/md";
 import pvtFunc from "../../models/pvtFunc";
 import InsureCardView from "./InsureCardView";
 import ModalEditorLarge from "../../cmp/ModalEditorLarge";
+import DaingerSelection from "../../cmp/DaingerSelection";
+import { CANCEL_TEXT, DELETE_TEXT, UNDOBABLE_TEXT, UNLOCK_TEXT } from "../../aux/FormUtil";
 
 const ORANGE = "#ff9800";
 const GRAY = "#717171";
@@ -77,14 +79,14 @@ const PatientVisit = () => {
   const [visits, setVisits] = useState([]);
   const [currentStatus, setCurrentStatus] = useState({ numVisits: 0, waiting: 0, pending: 0, payment: 0, done: 0 });
   const [insureToConfirm, setInsureToConfirm] = useState(null);
+  const [pvtToDelete, setPvtToDelete] = useState(null);
+  const [pvtToUnlock, setPvtToUnlock] = useState(null);
   const pvtDate = useRef(new Date());
 
   useEffect(() => {
     const asyncGet = async (fcId, date, limit, offset) => {
       try {
         const results = await margaret.getApi("pvt").getPatientVisits(fcId, date, limit, offset);
-        // console.log(JSON.stringify(results, null, 3));
-        // debugger;
         setVisits(results);
         const initialState = { numVisits: 0, waiting: 0, pending: 0, payment: 0, done: 0 };
         const st = results.reduce(
@@ -158,15 +160,16 @@ const PatientVisit = () => {
       asyncLock(currFacility(user).id, user.fullName, visit.id);
     }
     if (action === "unlock") {
-      const asyncUnlock = async (fcId, pvtId) => {
-        try {
-          await margaret.getApi("pvt").unlock(fcId, pvtId);
-        } catch (err) {
-          dispatch({ type: "setError", error: err });
-        }
-      };
-      const facilityId = currFacility(user).id;
-      asyncUnlock(facilityId, visit.id);
+      // const asyncUnlock = async (fcId, pvtId) => {
+      //   try {
+      //     await margaret.getApi("pvt").unlock(fcId, pvtId);
+      //   } catch (err) {
+      //     dispatch({ type: "setError", error: err });
+      //   }
+      // };
+      // const facilityId = currFacility(user).id;
+      // asyncUnlock(facilityId, visit.id);
+      setPvtToUnlock(visit);
     }
     if (action === "delete") {
       const asyncDelete = async (fcId, pvtId) => {
@@ -177,8 +180,44 @@ const PatientVisit = () => {
         }
       };
       const facilityId = currFacility(user).id;
-      asyncDelete(facilityId, visit.id);
+      asyncDelete(facilityId, visit);
     }
+  };
+
+  const cancelUnlock = () => {
+    setPvtToUnlock(null);
+  };
+
+  const cancelDelete = () => {
+    setPvtToDelete(null);
+  };
+
+  const handleUnlock = () => {
+    const asyncUnlock = async (fcId, pvtId) => {
+      try {
+        await margaret.getApi("pvt").unlock(fcId, pvtId);
+      } catch (err) {
+        dispatch({ type: "setError", error: err });
+      } finally {
+        setPvtToUnlock(null);
+      }
+    };
+    const facilityId = currFacility(user).id;
+    asyncUnlock(facilityId, pvtToUnlock);
+  };
+
+  const handleDelete = () => {
+    const asyncDelete = async (fcId, pvtId) => {
+      try {
+        await margaret.getApi("pvt").delete(fcId, pvtId);
+      } catch (err) {
+        dispatch({ type: "setError", error: err });
+      } finally {
+        setPvtToDelete(null);
+      }
+    };
+    const facilityId = currFacility(user).id;
+    asyncDelete(facilityId, pvtToDelete);
   };
 
   return (
@@ -275,6 +314,31 @@ const PatientVisit = () => {
             insure={insureToConfirm}
           />
         </ModalEditorLarge>
+      }
+      {
+        pvtToDelete &&
+        <DaingerSelection
+          messages={[`${pvtToDelete.patient.fullName}さんの受付を削除しますか？`]}
+          description={UNDOBABLE_TEXT}
+          cancelText={CANCEL_TEXT}
+          daingerText={DELETE_TEXT}
+          width="384px"
+          onCancel={cancelDelete}
+          onDainger={handleDelete}
+        >
+        </DaingerSelection>
+      }
+      {
+        pvtToUnlock &&
+        <DaingerSelection
+          messages={[`${pvtToUnlock.patient.fullName}さんのロック解除しますか？`]}
+          description={UNDOBABLE_TEXT}
+          cancelText={CANCEL_TEXT}
+          daingerText={UNLOCK_TEXT}
+          width="384px"
+          onCancel={cancelUnlock}
+          onDainger={handleUnlock}>
+        </DaingerSelection>
       }
     </Layout>
   );
