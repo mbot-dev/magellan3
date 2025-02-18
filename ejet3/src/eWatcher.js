@@ -10,7 +10,7 @@ const URL_TO_FACE = 'https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1
 // const URL_TO_FACE = 'http://localhost:8066/karte/api/v1/pvt/face'
 const DEBUG = false
 const DEBUG_PARSED = true
-const POST = false
+const POST = true
 const DELETE = true
 
 // 40 47 50 55
@@ -369,12 +369,12 @@ class ResWatcher {
       if (evt !== 'add' || !path.endsWith('.xml')) {
         return
       }
-      this.sleep(1000)  // wait for file read
+      this.sleep(5000)
       fs.readFile(path, 'utf8', (error, data) => {
         if (error) {
           console.log(`fs.readFile ${error}`)
         } else {
-          this.parse(data, path)
+            this.parse(data, path)
         }
       })
     })

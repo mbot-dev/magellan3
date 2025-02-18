@@ -21,7 +21,12 @@ import pvtFunc from "../../models/pvtFunc";
 import InsureCardView from "./InsureCardView";
 import ModalEditorLarge from "../../cmp/ModalEditorLarge";
 import DaingerSelection from "../../cmp/DaingerSelection";
-import { CANCEL_TEXT, DELETE_TEXT, UNDOBABLE_TEXT, UNLOCK_TEXT } from "../../aux/FormUtil";
+import {
+  CANCEL_TEXT,
+  DELETE_TEXT,
+  UNDOBABLE_TEXT,
+  UNLOCK_TEXT,
+} from "../../aux/FormUtil";
 
 const ORANGE = "#ff9800";
 const GRAY = "#717171";
@@ -77,7 +82,13 @@ const PatientVisit = () => {
   const margaret = useMargaret();
   const [{ user, updateVisit }, dispatch] = useStateValue();
   const [visits, setVisits] = useState([]);
-  const [currentStatus, setCurrentStatus] = useState({ numVisits: 0, waiting: 0, pending: 0, payment: 0, done: 0 });
+  const [currentStatus, setCurrentStatus] = useState({
+    numVisits: 0,
+    waiting: 0,
+    pending: 0,
+    payment: 0,
+    done: 0,
+  });
   const [insureToConfirm, setInsureToConfirm] = useState(null);
   const [pvtToDelete, setPvtToDelete] = useState(null);
   const [pvtToUnlock, setPvtToUnlock] = useState(null);
@@ -86,15 +97,22 @@ const PatientVisit = () => {
   useEffect(() => {
     const asyncGet = async (fcId, date, limit, offset) => {
       try {
-        const results = await margaret.getApi("pvt").getPatientVisits(fcId, date, limit, offset);
+        const results = await margaret
+          .getApi("pvt")
+          .getPatientVisits(fcId, date, limit, offset);
         setVisits(results);
-        const initialState = { numVisits: 0, waiting: 0, pending: 0, payment: 0, done: 0 };
-        const st = results.reduce(
-          (acc, pvt) => {
-            const key = pvt.status;
-            acc[key] += 1;
-            return acc;
-          }, initialState);
+        const initialState = {
+          numVisits: 0,
+          waiting: 0,
+          pending: 0,
+          payment: 0,
+          done: 0,
+        };
+        const st = results.reduce((acc, pvt) => {
+          const key = pvt.status;
+          acc[key] += 1;
+          return acc;
+        }, initialState);
         setCurrentStatus(st);
       } catch (err) {
         dispatch({ type: "setError", error: err });
@@ -119,7 +137,10 @@ const PatientVisit = () => {
         return;
       }
       const his = test[0];
-      const addition = ['qualificationValidity', 'qualificationConfirmationDate'];
+      const addition = [
+        "qualificationValidity",
+        "qualificationConfirmationDate",
+      ];
       addition.forEach((key) => {
         his[key] = visit[key];
       });
@@ -130,7 +151,9 @@ const PatientVisit = () => {
       const asyncLock = async (fc_id, userName, visitId) => {
         try {
           // getLock = try to lock the visit
-          const lock = await margaret.getApi("pvt").getLock(fc_id, userName, visitId);
+          const lock = await margaret
+            .getApi("pvt")
+            .getLock(fc_id, userName, visitId);
           if (!lock.lock) {
             // Someone locked now
             return;
@@ -160,27 +183,10 @@ const PatientVisit = () => {
       asyncLock(currFacility(user).id, user.fullName, visit.id);
     }
     if (action === "unlock") {
-      // const asyncUnlock = async (fcId, pvtId) => {
-      //   try {
-      //     await margaret.getApi("pvt").unlock(fcId, pvtId);
-      //   } catch (err) {
-      //     dispatch({ type: "setError", error: err });
-      //   }
-      // };
-      // const facilityId = currFacility(user).id;
-      // asyncUnlock(facilityId, visit.id);
       setPvtToUnlock(visit);
     }
     if (action === "delete") {
-      const asyncDelete = async (fcId, pvtId) => {
-        try {
-          await margaret.getApi("pvt").delete(fcId, pvtId);
-        } catch (err) {
-          dispatch({ type: "setError", error: err });
-        }
-      };
-      const facilityId = currFacility(user).id;
-      asyncDelete(facilityId, visit);
+      setPvtToDelete(visit);
     }
   };
 
@@ -203,7 +209,7 @@ const PatientVisit = () => {
       }
     };
     const facilityId = currFacility(user).id;
-    asyncUnlock(facilityId, pvtToUnlock);
+    asyncUnlock(facilityId, pvtToUnlock.id);
   };
 
   const handleDelete = () => {
@@ -217,7 +223,7 @@ const PatientVisit = () => {
       }
     };
     const facilityId = currFacility(user).id;
-    asyncDelete(facilityId, pvtToDelete);
+    asyncDelete(facilityId, pvtToDelete.id);
   };
 
   return (
@@ -236,7 +242,7 @@ const PatientVisit = () => {
       </Header>
       <Main>
         <ScrollContent>
-          <table className="w3-table w3-border w3-bordered w3-hoverable">
+          <table className="w3-table w3-border w3-bordered">
             <tbody>
               {visits.map((pvt, row) => {
                 const {
@@ -257,27 +263,46 @@ const PatientVisit = () => {
                 pvt.age = pvt.age || ageAt(dob);
                 const visitTime = pvtDateTime.substring(11, 16); // yyyy-mm-ddThh:mm:ss+0900
                 const valid = pvtFunc["qualificationValidity"](
-                  qualificationValidity,
+                  qualificationValidity
                 );
+                const fullKana = pvtFunc["halfToFullKana"](kana);
                 return (
                   <tr key={id}>
                     <td className="z3-middle-td">{`${row + 1}`}</td>
                     <td className="z3-middle-td">{visitTime}</td>
                     <td className="z3-middle-td">{ptId}</td>
                     <td className="z3-middle-td">{fullName}</td>
-                    <td className="z3-middle-td">{kana}</td>
+                    <td className="z3-middle-td">{fullKana}</td>
                     <td className="z3-middle-td">{sex}</td>
                     <td className="z3-middle-td">{`${dob}（${pvt.age}）`}</td>
-                    <td className="z3-middle-td">{hisProviderName}</td>
-                    <td className="z3-middle-td">{valid}</td>
                     <td className="z3-middle-td">{deptName}</td>
                     <td className="z3-middle-td">{phyFullName}</td>
+                    {/* <td className="z3-middle-td">{valid}</td> */}
+                    <td className="z3-middle-td">
+                      <ActionContainer>
+                        <button
+                          className="w3-button w3-padding-small z3-palette-first"
+                          onClick={() => handleSelect("karte", row)}
+                        >
+                          カルテ
+                        </button>
+                        <button
+                          className="w3-button w3-padding-small z3-palette-next"
+                          onClick={() => handleSelect("accounting", row)}
+                        >
+                          会計
+                        </button>
+                        <button
+                          className="w3-button w3-padding-small z3-palette-last"
+                          onClick={() => handleSelect("insure", row)}
+                        >
+                          保険証
+                        </button>
+                      </ActionContainer>
+                    </td>
                     <td className="z3-middle-td">
                       {lockedBy && (
-                        <HoverInfo
-                          messages={[user.fullName]}
-                          width="max-content"
-                        >
+                        <HoverInfo messages={[lockedBy]} width="max-content">
                           {statusIcon(lockedBy, status, newPatient, newHis)}
                         </HoverInfo>
                       )}
@@ -298,11 +323,9 @@ const PatientVisit = () => {
               })}
             </tbody>
           </table>
-          <div style={{ height: "192px" }} />
         </ScrollContent>
       </Main>
-      {
-        insureToConfirm &&
+      {insureToConfirm && (
         <ModalEditorLarge
           id="insure_card_view"
           title="保険証確認"
@@ -310,36 +333,35 @@ const PatientVisit = () => {
           onSubmit={() => setInsureToConfirm(null)}
           width="1024px"
         >
-          <InsureCardView
-            insure={insureToConfirm}
-          />
+          <InsureCardView insure={insureToConfirm} />
         </ModalEditorLarge>
-      }
-      {
-        pvtToDelete &&
+      )}
+      {pvtToUnlock && (
         <DaingerSelection
-          messages={[`${pvtToDelete.patient.fullName}さんの受付を削除しますか？`]}
+          messages={[
+            `${pvtToUnlock.lockedBy}さんが保持しているロックを解除しますか？`,
+          ]}
+          description={UNDOBABLE_TEXT}
+          cancelText={CANCEL_TEXT}
+          daingerText={UNLOCK_TEXT}
+          width="384px"
+          onCancel={cancelUnlock}
+          onDainger={handleUnlock}
+        ></DaingerSelection>
+      )}
+      {pvtToDelete && (
+        <DaingerSelection
+          messages={[
+            `${pvtToDelete.patient.fullName}さんの受付を削除しますか？`,
+          ]}
           description={UNDOBABLE_TEXT}
           cancelText={CANCEL_TEXT}
           daingerText={DELETE_TEXT}
           width="384px"
           onCancel={cancelDelete}
           onDainger={handleDelete}
-        >
-        </DaingerSelection>
-      }
-      {
-        pvtToUnlock &&
-        <DaingerSelection
-          messages={[`${pvtToUnlock.patient.fullName}さんのロック解除しますか？`]}
-          description={UNDOBABLE_TEXT}
-          cancelText={CANCEL_TEXT}
-          daingerText={UNLOCK_TEXT}
-          width="384px"
-          onCancel={cancelUnlock}
-          onDainger={handleUnlock}>
-        </DaingerSelection>
-      }
+        ></DaingerSelection>
+      )}
     </Layout>
   );
 };
@@ -369,12 +391,17 @@ const Main = styled.div`
 `;
 
 const ScrollContent = styled.div`
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 144px);
   overflow-y: auto;
 `;
 
 const FlexWidth = styled.div`
   flex: 0 0 32px;
+`;
+
+const ActionContainer = styled.div`
+  width: 224px;
+  display: flex;
 `;
 
 const EnhancedPatientVisit = withDisplayNull(PatientVisit);

@@ -13,14 +13,14 @@ let mainWindow
 const evtEmitter = new EventEmitter()
 const watcher = new ResWatcher(evtEmitter)
 // const directoryToWatch = '/Volumes/windows11pc/shikaku'
-// const directoryToWatch = '\\MAGELLAN-WIN\share'
-const WIN_DIR_TO_WATCH = '/home/kazushi/develop/oqs/res'
+const WIN_DIR_TO_WATCH = '\\MAGELLAN-WIN\\share'
+const LINUX_DIR_TO_WATCH = '/home/kazushi/develop/oqs/res'
 const MAC_DIR_TO_WATCH = '/Users/kazushi/develop/oqs/res'
 const LOCAL_URL = 'http://localhost:8066'
 const NGROK_URL = 'https://dashing-skunk-nominally.ngrok-free.app'
 const APP_NAME = 'Margaret'
 
-const whichURL = 'LOCAL' // || NGROK_URL
+const whichURL = 'NGROK_URL' // LOCAL || NGROK_URL
 
 const createWindow = () => {
   const startUrl = whichURL === 'LOCAL' ? LOCAL_URL : NGROK_URL
@@ -90,8 +90,18 @@ app.on('will-quit', async () => {
 })
 
 evtEmitter.on('start-watching-res', () => {
-  const directoryToWatch = os.platform() === 'win32' ? WIN_DIR_TO_WATCH : MAC_DIR_TO_WATCH
-  watcher.start(directoryToWatch)
+  const pl = os.platform()
+  if ( pl === 'win32') {
+    watcher.start(WIN_DIR_TO_WATCH)
+    return
+  }
+  if ( pl === 'darwin') {
+    watcher.start(MAC_DIR_TO_WATCH)
+    return
+  }
+  if ( pl === 'linux') {
+    watcher.start(LINUX_DIR_TO_WATCH)
+  }
 })
 
 evtEmitter.on('stop-watching-res', async () => {

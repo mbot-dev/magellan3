@@ -56,6 +56,6 @@ export const UNIT_TEXT = "単位";
 export const DISPLAY_TEXT = "カルテ表示";
 export const CLOSE_TEXT = "閉じる";
 export const CANCEL_SHORT_TEXT = "取消";
-export const UNDOBABLE_TEXT = "この操作は元に戻せません";
+export const UNDOBABLE_TEXT = "この操作は取り消しできませません。";
 export const UNLOCK_TEXT = "ロック解除";
 export const LOCK_TEXT = "ロック";

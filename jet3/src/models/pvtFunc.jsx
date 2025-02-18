@@ -1,6 +1,14 @@
 import { dateDiff } from '../util/dt2';
+import { hankana2Zenkana } from '../util/strings';
 
 class PvtFunc {
+
+  halfToFullKana(value) {
+    if (!value) {
+      return '';
+    }
+    return hankana2Zenkana(value)
+  }
 
   ageAt(dob, end = new Date()) {
     if (!dob) {

@@ -193,7 +193,7 @@ const Main = styled.div`
 `;
 
 const ScrollContent = styled.div`
-  max-height: calc(100vh - 180px);
+  max-height: calc(100vh - 176px);
   overflow-y: auto;
 `;
 
