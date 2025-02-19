@@ -9,7 +9,7 @@ const STATUS_ERROR = 'error'
 const URL_TO_FACE = 'https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1/pvt/face'
 // const URL_TO_FACE = 'http://localhost:8066/karte/api/v1/pvt/face'
 const DEBUG = false
-const DEBUG_PARSED = true
+const DEBUG_PARSED = false
 const POST = true
 const DELETE = true
 
@@ -366,10 +366,9 @@ class ResWatcher {
     this.emitter.emit('watching-event', 'watching started')
     this.watcher = chokidar.watch(directoryToWatch).on('all', (evt, path) => {
       console.log(evt, path)
-      if (evt !== 'add' || !path.endsWith('.xml')) {
+      if (!path.endsWith('.xml')) {
         return
       }
-      this.sleep(5000)
       fs.readFile(path, 'utf8', (error, data) => {
         if (error) {
           console.log(`fs.readFile ${error}`)
