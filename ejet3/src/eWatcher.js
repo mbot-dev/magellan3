@@ -13,7 +13,7 @@ const DEBUG_PARSED = false
 const POST = true
 const DELETE = true
 
-// 40 47 50 55
+// 4 41 47 50 55
 
 // 被保険者証一部負担金割合 = 数値 ただし 1割負担=010 等に設定されている
 // 上記以外は全て文字列
@@ -364,16 +364,16 @@ class ResWatcher {
     }
     this.state = STATUS_WATCHING
     this.emitter.emit('watching-event', 'watching started')
-    this.watcher = chokidar.watch(directoryToWatch).on('all', (evt, path) => {
-      console.log(evt, path)
-      if (!path.endsWith('.xml')) {
-        return
-      }
+    this.watcher = chokidar.watch(directoryToWatch, {
+      ignored: (file, _stats) => _stats?.isFile() && !file.endsWith('.xml'),
+      persistent: true,
+    }).on('add', path => {
+      console.log(path)
       fs.readFile(path, 'utf8', (error, data) => {
         if (error) {
           console.log(`fs.readFile ${error}`)
         } else {
-            this.parse(data, path)
+          this.parse(data, path)
         }
       })
     })
