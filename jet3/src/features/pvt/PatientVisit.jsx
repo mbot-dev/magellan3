@@ -284,19 +284,19 @@ const PatientVisit = () => {
                           className="w3-button w3-padding-small z3-palette-first"
                           onClick={() => handleSelect("karte", row)}
                         >
-                          カルテ
+                          {TEXT_KARTE}
                         </button>
                         <button
                           className="w3-button w3-padding-small z3-palette-next"
                           onClick={() => handleSelect("accounting", row)}
                         >
-                          会計
+                          {TEXT_ACCOUNTING}
                         </button>
                         <button
                           className="w3-button w3-padding-small z3-palette-last"
                           onClick={() => handleSelect("insure", row)}
                         >
-                          保険証
+                          {TEXT_INSURE}
                         </button>
                       </ActionContainer>
                     </td>
@@ -315,7 +315,7 @@ const PatientVisit = () => {
                         onSelect={handleSelect}
                         sourceIndex={row}
                         right={true}
-                        disabled={false}
+                        disabled={!lockedBy}
                       />
                     </td>
                   </tr>
@@ -347,7 +347,8 @@ const PatientVisit = () => {
           width="384px"
           onCancel={cancelUnlock}
           onDainger={handleUnlock}
-        ></DaingerSelection>
+        >
+        </DaingerSelection>
       )}
       {pvtToDelete && (
         <DaingerSelection
@@ -403,6 +404,10 @@ const ActionContainer = styled.div`
   width: 224px;
   display: flex;
 `;
+
+const TEXT_KARTE = "カルテ";
+const TEXT_ACCOUNTING = "会計";
+const TEXT_INSURE = "保険証";
 
 const EnhancedPatientVisit = withDisplayNull(PatientVisit);
 export default EnhancedPatientVisit;
