@@ -287,6 +287,12 @@ async def list_short_name(pool):
         sql = 'select seq, short_name, apply_to, auto_flg from tbl_short_name order by seq'
         return await fetch_all_as_json(conn, sql)
 
+# Notification
+async def list_notification(pool):
+    async with pool().acquire() as conn:
+        sql = 'select * from tbl_notification order by code'
+        return await fetch_all_as_json(conn, sql)
+
 async def get_prefecture_code(pool, name):
     async with pool().acquire() as conn:
         pref = f'^{name}'

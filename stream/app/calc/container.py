@@ -81,10 +81,11 @@ class Container(SBase):
         """
         Dependency Injection
         """
-        auto_add, names, ctx = self.injector.inject_from(self.context.get_karte())
-        get_logger(__name__).debug(pretty_dumps(auto_add, "自動Injectin Items"))
-        if len(auto_add) == 0 or len(names) == 0 or len(ctx) == 0:
+        auto_add, names = self.injector.inject_from(self.context.get_karte())
+        if len(auto_add) == 0 or len(names) == 0:
             return
+        get_logger(__name__).info(pretty_dumps(auto_add, "auto_add items"))
+        get_logger(__name__).info(pretty_dumps(names, "variable names"))
         # Solve by Z3
         accept_to_add = []
         bools = [
@@ -93,18 +94,28 @@ class Container(SBase):
         s = Solver()
         # Parse logic text of auto_add
         for b, p in zip(bools, auto_add):
-            logic_text = p.get("is_satisfied")
+            logic_text = p.get("is_toreru")
             z3_logic = self.parser.parse(logic_text)
             s.add(If(z3_logic, b, Not(b)))
         # Set context value
-        for n, c in zip(names, ctx):
-            v = getattr(self.context, n)()
-            get_logger(__name__).debug(f"{n}: {c}: {v}")
-            s.add(c if v else Not(c))
+        for nm in names:
+            nl = nm.split("_")
+            n = nl[0]
+            b = Bool(nm)
+            v = None
+            if len(nl) == 1:
+                v = getattr(self.context, n)()
+            elif len(nl) == 2 and (nl[1] == "体制" or nl[1] == "届出"):
+                v = getattr(self.context, nl[1])(n)
+            else:
+                v = getattr(self.context, nm)()  # 乳幼児3_55 etc
+            get_logger(__name__).info(f"{n}: {v}")
+            s.add(b if v else Not(b))
         # Check satisfiability
         if s.check() == sat:
             m = s.model()
             for b, p in zip(bools, auto_add):
+                get_logger(__name__).info(f"{p.get('name')}: {is_true(m[b])}")
                 if is_true(m[b]):
                     accept_to_add.append(p)
             get_logger(__name__).info(pretty_dumps(accept_to_add, "自動算定項目"))
@@ -115,7 +126,7 @@ class Container(SBase):
         算定回数フィルターを通す
         """
         accept_to_add = await self.filter_santei_kaisu(procedures=accept_to_add)
-        get_logger(__name__).debug(
+        get_logger(__name__).info(
             pretty_dumps(accept_to_add, "自動算定項目(フィルター後)")
         )
         """
@@ -130,23 +141,33 @@ class Container(SBase):
             bundle["injected"] = True
             bundle["claim_items"].append(a)
             self.context.get_karte().get("p").append(bundle)
-        get_logger(__name__).debug(pretty_dumps(self.context.get_karte().get("p"), "P"))
+        get_logger(__name__).debug(
+            pretty_dumps(self.context.get_karte().get("p"), "My P")
+        )
 
     async def solve(self):
         entries = []
         for p in self.get_procedures():
             under_limit = p.get("under_limit", True)
             if not under_limit:
+                get_logger(__name__).info(f"{p.get('name')} 算定回数オーバー取れない")
                 p["算定"] = "取れない"
                 continue
             if p.get("has_ct"):
+                get_logger(__name__).info(f"{p.get('name')} 制約あり")
                 entries.append(p)
             else:
+                get_logger(__name__).info(f"{p.get('name')} 取れる")
                 p["算定"] = "取れる"
 
         if len(entries) == 0:
             return
-        get_logger(__name__).debug([p.get("name") for p in entries])
+
+        get_logger(__name__).info([p.get("name") for p in entries])
+
+        if len(entries) == 1:
+            entries[0]["算定"] = "取れる"
+            return
 
         p = []
         q = []
@@ -222,8 +243,8 @@ class Container(SBase):
                 q.append(b1)
                 q.append(b2)
 
-        get_logger(__name__).debug(p)
-        get_logger(__name__).debug(q)
+        get_logger(__name__).info(p)
+        get_logger(__name__).info(q)
 
         # 充足可能性を確認
         s = Solver()
@@ -232,8 +253,11 @@ class Container(SBase):
         if s.check() == sat:
             m = s.model()
             for i in range(len(entries)):
-                entries[i]["算定"] = "取れる" if is_true(m[b[i]]) else "取れない"
-            get_logger(__name__).debug(pretty_dumps(self.get_procedures(), "算定結果"))
+                name = entries[i].get("name")
+                toreru = is_true(m[b[i]])
+                get_logger(__name__).info(f"{name}: {toreru}")
+                entries[i]["算定"] = "取れる" if toreru else "取れない"
+            get_logger(__name__).info(pretty_dumps(self.get_procedures(), "算定結果"))
         else:
             get_logger(__name__).warning("充足可能性なし")
             raise NotSatisfiedException()
@@ -268,8 +292,10 @@ class Container(SBase):
         # 各診療行為クラスに正規化（基本項目に加算がつく形、診療行為と医薬品及び特定器材をセットの形にする ）を提出させる
         normalized = []
         for child in self.children:
+            get_logger(__name__).info(f"child: {child}")
             normalized += await child.aggregate()
         # normalized配列からレセプトを作成し保存する
+        get_logger(__name__).info(pretty_dumps(normalized, "Normalized"))
         rcp = [self.rcp_maker.calculate(n) for n in normalized]
         receipt_data = dict()
         receipt_data["p"] = rcp
@@ -293,15 +319,15 @@ class Container(SBase):
                 line = ",".join(line)
                 get_logger(__name__).info(line)
         try:
-            get_logger(__name__).debug("starting Save")
-            get_logger(__name__).debug(pretty_dumps(receipt_data, "Save"))
+            get_logger(__name__).info("starting Save")
+            get_logger(__name__).info(pretty_dumps(receipt_data, "Save"))
             await self.bridge.save_receipt(receipt_data)
-            get_logger(__name__).debug("end Save")
+            get_logger(__name__).info("end Save")
         except Exception as e:
-            get_logger(__name__).debug("---------------------------------")
-            get_logger(__name__).debug("Error Save")
+            get_logger(__name__).info("---------------------------------")
+            get_logger(__name__).info("Error Save")
             get_logger(__name__).error(e)
-            get_logger(__name__).debug("---------------------------------")
+            get_logger(__name__).info("---------------------------------")
             raise e
 
     async def set_constraints_(self, procedures):

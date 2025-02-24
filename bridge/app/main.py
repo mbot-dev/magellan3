@@ -60,6 +60,7 @@ routes = [
             Route("/address/zip_code/{code}", master.find_address_by_zip_code),
             Route("/departments", master.list_all_depts),
             Route("/short_name", master.list_short_name),
+            Route("/notification", master.list_notification),
             Route("/prefecture_code", master.get_prefecture_code),
         ],
     ),

@@ -171,6 +171,12 @@ class MasterService {
     const path = `${BASE_URL}/short_name`;
     return await fetchGET(path);
   }
+
+  // Notification
+  async listNotification() {
+    const path = `${BASE_URL}/notification`;
+    return await fetchGET(path);
+  }
 }
 
 export default MasterService;

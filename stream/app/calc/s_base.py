@@ -13,7 +13,7 @@ class SBase(S):
         pass
     
     def split_procedures_in(self, bundles=None):
-        bundles = [b for b in self.context.get_karte().get('p') if b.get('group') == group] if bundles is None else bundles
+        bundles = [b for b in self.context.get_karte().get('p') if b.get('group') == self.group] if bundles is None else bundles
         toreru = [i for b in bundles for i in b.get('claim_items') if h.is_toreru(i)]
         base = [i for i in toreru if h.is_kihon_item(i)]
         annotations = [i for i in toreru if h.is_chu_item(i)]

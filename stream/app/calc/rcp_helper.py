@@ -49,7 +49,7 @@ def is_toreru(proc):
     return is_procedure(proc) and proc.get(SANTEI) == TORERU
 
 def is_injected(proc):
-    return is_procedure(proc) and proc.get('is_satisfied') is not None
+    return is_procedure(proc) and proc.get('is_toreru') is not None
 
 def is_kihon_komoku(proc):
     return is_procedure(proc) and proc.get(KOKUJI_SHIKIBESTU_KBN) in KIHON_ZYUNYO_GOUSEI

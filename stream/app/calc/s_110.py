@@ -45,14 +45,15 @@ class S110(SBase):
         CSV 11 12 13 14 基本項目ごとに点数を記録
         基本項目=1, 注加算>0 通則=0
         """
+        get_logger(__name__).debug(pretty_dumps(self.bundles, "110 Bundles"))
         self.base, self.annotations, self.generals = self.split_procedures_in(
             self.bundles
         )
         if len(self.base) != 1:
+            get_logger(__name__).info("110 base is not 1")
             return []
         normalized = list(map(self.normalize, self.base))
         get_logger(__name__).debug(
             pretty_dumps(normalized, f"Normalized {self.rcp_name}")
         )
         return normalized
-

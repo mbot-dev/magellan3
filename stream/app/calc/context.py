@@ -1,4 +1,6 @@
 from datetime import datetime
+from pathlib import Path
+import csv
 from flaretool.holiday import JapaneseHolidays
 
 """
@@ -8,6 +10,8 @@ from flaretool.holiday import JapaneseHolidays
 
 
 class Context:
+    PATH_GAIZINKEN = Path("app/data/gaizinken.csv")
+
     week_day_dict = {"mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6}
 
     def is_procedure(self, p):
@@ -176,6 +180,9 @@ class Context:
         dt = self.datetime_from_created_at()
         return (22 <= dt.hour <= 24) or (0 <= dt.hour <= 6)
 
+    def 夜間(self):
+        return False  # Todo
+
     def 標榜時間(self):
         t = self.time_from_datetime(self.datetime_from_created_at())  # 10:00 ..
         in_am = False
@@ -211,7 +218,14 @@ class Context:
     # --------------------------------------------------------------------------------------------
     def 施設基準(self, name):
         # Test
-        if name in ["明", "般1", "院内検査", "外迅検", "検管1"]:
+        if name in [
+            "明細書発行体制等加算",
+            "一般名処方加算1",
+            "一般名処方加算2",
+            "外来感染対策向上加算",
+            "機能強化加算",
+            "外迅検",
+        ]:
             return True
         return self.standards.get(name, False)
 
@@ -223,6 +237,9 @@ class Context:
 
     def 小児科(self):
         return self.get_karte().get("dept_id") == "09"
+
+    def 小児外科(self):
+        return self.get_karte().get("dept_id") == "09"  # Todo
 
     def 耳鼻咽喉科(self):
         return self.get_karte().get("dept_id") == "27"
@@ -246,17 +263,14 @@ class Context:
 
     def 文書にて説明(self, name):
         return self.get_karte().get(name, True)
+    
+    def 疾患(self):
+        return False
+    
+    def 疾患2(self):
+        return False
 
     # --------------------------------------------------------------------------------------------
-    def 機能強化(self):
-        return self.体制("機能強化")
-
-    def 初連(self):
-        return self.体制("初連")
-
-    def 明(self):
-        return self.体制("明")
-
     def 外来管理(self):
         procedures = []
         for b in self.karte.get("p"):
@@ -334,16 +348,13 @@ class Context:
         )
         return self.特定疾患() and over_28
 
-    def 般1(self):  # 2
-        return self.体制("般1")
-
-    def 般2(self):  # 2
-        return self.体制("般2")
-
     def 薬剤師常勤(self):
         return self.体制("薬剤師常勤")
 
     # --------------------------------------------------------------------------------------------
+    def 処置イ(self):
+        return True
+
     def 時間外2(self):
         procedures = self.get_procedures("400")
         has = len([p for p in procedures if p.get("c43_時間加算区分") == "1"]) > 0
@@ -358,7 +369,7 @@ class Context:
 
     def 深夜2(self):
         procedures = self.get_procedures("400")
-        has = len([p for p in procedures if p.get("") == "1"]) > 0  # 1?
+        has = len([p for p in procedures if p.get("c43_時間加算区分") == "1"]) > 0  # 1?
         return self.深夜 and has
 
     def 乳幼児3_110(self):
@@ -383,7 +394,7 @@ class Context:
 
     def 乳幼児6_55(self):
         procedures = self.get_procedures("400")
-        has = len([p for p in procedures if p.get("") == "5"]) > 0
+        has = len([p for p in procedures if p.get("c46_処置乳幼児加算区分") == "5"]) > 0
         return self.乳幼児6() and has
 
     # --------------------------------------------------------------------------------------------
@@ -489,15 +500,15 @@ class Context:
             )
             > 0
         )
-
-    def 外迅検(self):
-        return self.体制("外迅検") and self.文書にて説明("検査結果")
+    
+    def count_gaizinken(self):
+        return len([p for p in self.get_procedures("600") if p.get("code") in self.read_items_from(self.PATH_GAIZINKEN)])
 
     def 緊検(self):
-        return self.体制("院内検査") and (self.時間外() or self.休日() or self.深夜())
+        return False  # self.体制("院内検査") and (self.時間外() or self.休日() or self.深夜())
 
     def 検管1(self):
-        return self.施設基準("検管1") and self.届出("検管1")
+        return False  # self.施設基準("検管1") and self.届出("検管1")
 
     def 病理医常勤(self):
         return self.体制("病理医常勤")
@@ -514,3 +525,13 @@ class Context:
             )
             > 0
         )
+
+    def read_items_from(self, p):
+        target = []
+        # p = Path(f"{self.FILE_DIR}/{file_name}")
+        if not p.exists():
+            return target
+        with open(p, "r") as f:
+            for line in csv.reader(f):
+                target.append(line[0])
+        return target

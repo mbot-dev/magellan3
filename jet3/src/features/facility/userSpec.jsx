@@ -92,3 +92,13 @@ export const LIST_SPEC_SHORT_NAME = {
     { key: 'autoFlg', label: '自動算定', func: 'autoSantei', arg: ['autoFlg'] }
   ]
 };
+
+export const LIST_SPEC_NOTIFICATION = {
+  columnGetters: [
+    // { key: 'code', label: 'コード' },
+    { key: 'kbn', label: '適用欄' },
+    { key: 'name', label: '名称' },
+    { key: 'method', label: '体制・届出' },
+    // { key: 'z3var', label: 'Z3' },
+  ]
+};

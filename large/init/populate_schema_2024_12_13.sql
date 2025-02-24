@@ -123,6 +123,17 @@ create table m_standard (
     FOREIGN KEY(facility_id) REFERENCES m_facility(id) ON DELETE CASCADE
 );
 
+create table m_notification (
+    facility_id varchar(255) not null,
+    code varchar(255) not null,
+    kbn varchar(255) not null,
+    name varchar(255) not null,
+    method varchar(255) not null,
+    zvar varchar(255) not null,
+    --
+    FOREIGN KEY(facility_id) REFERENCES m_facility(id) ON DELETE CASCADE
+);
+
 create table m_pt_number(
     facility_id varchar(255) primary key,
     num_digits integer not null default 6,

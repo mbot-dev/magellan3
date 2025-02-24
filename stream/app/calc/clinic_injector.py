@@ -1,159 +1,19 @@
 from itertools import groupby
 from pathlib import Path
 import csv
-from z3 import Bools
 from .auto_injector import AutoInjector
+from ..util.tracer import get_logger
 
 
 class ClinicInjector(AutoInjector):
-    """軽量版の依存性注入クラス"""
+    """
+    軽量版の依存性注入クラス
+    """
 
     FILE_DIR = "app/data"
 
-    bool_names = [
-        "初診",
-        "時間外",
-        "休日",
-        "深夜",
-        "乳幼児6",
-        "小児科",
-        "夜早",
-        "再診",
-        "明",
-        "外来管理",
-        "院内処方",
-        "院外処方",
-        "リフィル",
-        "向精神多剤",
-        "向精神長期",
-        "内服7種類以上",
-        "乳幼児3",
-        "向調連",
-        "特処1",
-        "特処2",
-        "般1",
-        "般2",
-        "時間外2",
-        "休日2",
-        "深夜2",
-        "乳幼児3_110",
-        "乳幼児3_55",
-        "乳幼児6_110",
-        "乳幼児6_83",
-        "乳幼児6_55",
-        "耳鼻咽喉科",
-        "乳幼児6",
-        "bv",
-        "判尿",
-        "判血",
-        "判生1",
-        "判生2",
-        "判免",
-        "判微",
-        "判遺",
-        "外迅検",
-        "緊検",
-        "検管1",
-        "検査逓減",
-    ]
-
     def __init__(self):
         super().__init__()
-
-    def inject_ctx(self):
-        (
-            初診,
-            時間外,
-            休日,
-            深夜,
-            乳幼児6,
-            小児科,
-            夜早,
-            再診,
-            明,
-            外来管理,
-            院内処方,
-            院外処方,
-            リフィル,
-            向精神多剤,
-            向精神長期,
-            内服7種類以上,
-            乳幼児3,
-            向調連,
-            特処1,
-            特処2,
-            般1,
-            般2,
-            時間外2,
-            休日2,
-            深夜2,
-            乳幼児3_110,
-            乳幼児3_55,
-            乳幼児6_110,
-            乳幼児6_83,
-            乳幼児6_55,
-            耳鼻咽喉科,
-            乳幼児6,
-            bv,
-            判尿,
-            判血,
-            判生1,
-            判生2,
-            判免,
-            判微,
-            判遺,
-            外迅検,
-            緊検,
-            検管1,
-            検査逓減,
-        ) = Bools(self.bool_names)
-        ctx = [
-            初診,
-            時間外,
-            休日,
-            深夜,
-            乳幼児6,
-            小児科,
-            夜早,
-            再診,
-            明,
-            外来管理,
-            院内処方,
-            院外処方,
-            リフィル,
-            向精神多剤,
-            向精神長期,
-            内服7種類以上,
-            乳幼児3,
-            向調連,
-            特処1,
-            特処2,
-            般1,
-            般2,
-            時間外2,
-            休日2,
-            深夜2,
-            乳幼児3_110,
-            乳幼児3_55,
-            乳幼児6_110,
-            乳幼児6_83,
-            乳幼児6_55,
-            耳鼻咽喉科,
-            乳幼児6,
-            bv,
-            判尿,
-            判血,
-            判生1,
-            判生2,
-            判免,
-            判微,
-            判遺,
-            外迅検,
-            緊検,
-            検管1,
-            検査逓減,
-        ]
-        return ctx
 
     def inject_from(self, karte):
         """
@@ -161,7 +21,8 @@ class ClinicInjector(AutoInjector):
         """
         bundles = karte.get("p")
         bundles.sort(key=lambda x: x.get("group"))
-        items = []
+        auto_injections = []
+        variables = set()
         rp = []
         inj = []
         for b, g in groupby(bundles, lambda x: x.get("group")):
@@ -172,13 +33,22 @@ class ClinicInjector(AutoInjector):
             elif b.startswith("3"):
                 inj += g
             else:
-                items += self.inject_from_group(f"auto_items_{b}.csv", g)
+                items = self.inject_from_group(f"auto_{b}.csv", g)
+                if items and len(items) == 2:
+                    auto_injections += items[0]
+                    variables = variables.union(items[1])
         if len(rp) > 0:
-            items += self.inject_from_group("auto_items_200.csv", rp)
+            items = self.inject_from_group("auto_200.csv", rp)
+            if items and len(items) == 2:
+                auto_injections += items[0]
+                variables = variables.union(items[1])
         if len(inj) > 0:
-            pass
-            # items =+ self.inject_from_group('auto_items_300.csv', inj)
-        return items, self.bool_names, self.inject_ctx()
+            items = self.inject_from_group("auto_300.csv", inj)
+            if items and len(items) == 2:
+                auto_injections += items[0]
+                variables = variables.union(items[1])
+
+        return auto_injections, variables
 
     def inject_from_group(self, file, group):
         """
@@ -186,7 +56,8 @@ class ClinicInjector(AutoInjector):
         """
         file_path = Path(f"{self.FILE_DIR}/{file}")
         if not file_path.exists():
-            return []
+            return None
+
         procedures = []
         for b in group:
             procedures += [
@@ -194,58 +65,67 @@ class ClinicInjector(AutoInjector):
                 for i in b.get("claim_items")
                 if i.get("code").startswith("1") and len(i.get("code")) == 9
             ]
-        additions = []
+        injections = []
+        variables = set()
+
         with open(file_path, "r") as f:
             for line in csv.reader(f):
                 if line[0].startswith("---"):
                     continue
-                kbn, code, name, entity = line[:4]
-                methods = line[4:]  # And(初診, 時間外) etc
-                logic = None
-                count_in_file = None
-                if len(methods) == 1:
-                    test = methods[0].split("^")  # And(外迅検)^gaizinken.csv
-                    if len(test) == 2:
-                        logic = test[0]  # And(外迅検)
-                        count_in_file = test[1]  # gaizinken.csv
-                    else:
-                        logic = methods[0]  # And(判血)
-                else:
-                    logic = ",".join(methods)
+                entity = line[0]
+                code = line[1]
+                name = line[2]
+                logic = line[3]
                 """
-                カルテの全診療行為の中に同じcodeを持つものがある場合、その診療行為のis_satisfiedを更新する
+                論理式の中の変数を抽出する
+                """
+                flats = (
+                    logic.replace("And(", "")
+                    .replace("Or(", "")
+                    .replace("Not(", "")
+                    .replace(")", "")
+                    .split(",")
+                )
+                for v in flats:
+                    variables.add(v)
+                """
+                カルテの全診療行為の中に同じcodeを持つものがある場合、その診療行為のis_toreruを更新する
                 """
                 proc = [p for p in procedures if p.get("code") == code]
                 if len(proc) > 0:
                     for p in proc:
-                        p["is_satisfied"] = logic
+                        p["is_toreru"] = logic
                     continue
                 """
-                診療行為がカルテにない場合は追加
+                診療行為がカルテにない場合は追加 -> Auto Injection
                 """
-                if kbn == "1":
-                    inj = dict()
-                    inj["code"] = code
-                    inj["name"] = name
-                    inj["entity"] = entity
-                    inj["is_satisfied"] = logic  # And(初診, 時間外) etc
-                    if count_in_file:
-                        target = self.read_items_from(count_in_file)
-                        cnt = len([p for p in procedures if p.get("code") in target])
-                        if cnt > 0:
-                            """
-                            外来迅速検査加算の項目数
-                            """
-                            inj["quantity"] = str(cnt)  # string
-                            additions.append(inj)
-                    else:
-                        additions.append(inj)
-        return additions
+                inj = dict()
+                inj["code"] = code
+                inj["name"] = name
+                inj["entity"] = entity
+                inj["is_toreru"] = logic  # And(初診, 時間外) etc
+                """
+                外来迅速検査加算（に限らないけど）の項目数をカウントする
+                """
+                if len(line) > 4:
+                    target = self.read_items_from(line[4])
+                    cnt = len([p for p in procedures if p.get("code") in target])
+                    if cnt > 0:
+                        """
+                        外来迅速検査加算の項目数
+                        """
+                        inj["quantity"] = str(cnt)  # string
+            
+                injections.append(inj)
+
+        get_logger(__name__).debug(f"Auto Injection: {injections}")
+        get_logger(__name__).debug(f"Variables: {variables}")
+        return injections, variables
 
     def read_items_from(self, file):
         target = []
-        with open(f"{self.FILE_DIR}/{file}", "r") as f:
+        path_to_file = Path(f"{self.FILE_DIR}/{file}")
+        with open(path_to_file, "r") as f:
             for line in csv.reader(f):
                 target.append(line[0])
         return target
-

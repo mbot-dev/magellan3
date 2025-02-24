@@ -543,6 +543,14 @@ create table IF NOT EXISTS tbl_short_name (
     auto_flg integer not null default 0
 );
 
+create table IF NOT EXISTS tbl_notification (
+    code varchar(255) not null,
+    kbn varchar(255) not null,
+    name varchar(255) not null,
+    method varchar(255) not null,
+    zvar varchar(255) not null
+);
+
 -- Master
 COPY master_disease FROM '/usr/src/master_2025_02_03/b_20250101.txt' DELIMITER ',' CSV ENCODING 'SJIS';
 COPY master_modifier FROM '/usr/src/master_2025_02_03/z_20250101.txt' DELIMITER ',' CSV ENCODING 'SJIS';
@@ -563,3 +571,4 @@ COPY tbl_zip_code FROM '/usr/src/master_2025_02_03/KEN_ALL_UTF8.csv' DELIMITER '
 COPY tbl_dept_code FROM '/usr/src/master_2025_02_03/utf_depts.csv' DELIMITER ',' CSV ENCODING 'UTF8';
 COPY tbl_prefecture_code FROM '/usr/src/master_2025_02_03/utf_prefecture.csv' DELIMITER ',' CSV ENCODING 'UTF8';
 COPY tbl_short_name (seq, kbn, descriotion, short_name, apply_to) FROM '/usr/src/master_2025_02_03/4-med-1.csv' DELIMITER ',' CSV ENCODING 'UTF8';
+COPY tbl_notification FROM '/usr/src/master_2025_02_03/notification.csv' DELIMITER ',' CSV ENCODING 'UTF8';
