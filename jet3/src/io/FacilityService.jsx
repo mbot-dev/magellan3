@@ -21,15 +21,15 @@ class FacilityService {
     return await fetchPOST(path, payload);
   }
 
-  async getStandard(facility_id) {
-    const path = `${FACILITY_URL}/standard`;
+  async listNotifications(facility_id) {
+    const path = `${FACILITY_URL}/notification`;
     const params = { facility_id };
     return await fetchGET(path, params);
   }
 
-  async replaceStandard(payload) {
-    const path = `${FACILITY_URL}/standard`;
-    return await fetchPOST(path, payload);
+  async updateNotifications(payload) {
+    const path = `${FACILITY_URL}/notification`;
+    return await fetchPUT(path, payload);
   }
 
   async getPrefectureCode(name) {

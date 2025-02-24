@@ -10,7 +10,8 @@ import { useMargaret } from "../../io/MargaretProvider";
 const Standards = () => {
   const margaret = useMargaret();
   const [{ user }, dispatch] = useStateValue();
-  const [notification, setNotification] = useState([]);
+  const [facilityNotifications, setFacilityNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     if (!user) {
@@ -18,8 +19,10 @@ const Standards = () => {
     }
     const asyncGet = async () => {
       try {
-        const result = await margaret.getApi("master").listNotification();
-        setNotification(result && result.length > 0 ? result : []);
+        const notif1 = await margaret.getApi("faciity").listNotifications();
+        setFacilityNotifications(notif1 && notif1.length > 0 ? notif1 : [])
+        const notifAll = await margaret.getApi("master").listNotification();
+        setNotifications(notifAll && notifAll.length > 0 ? notifAll : []);
       } catch (err) {
         dispatch({ type: "setError", error: err });
       }
@@ -28,7 +31,7 @@ const Standards = () => {
   }, [user]);
 
   return (
-    notification && (
+    notifications && (
       <Layout>
         <div
           className="z3-calc-scroll-container"
@@ -43,7 +46,7 @@ const Standards = () => {
               </tr>
             </StickyColumn>
             <StickyBody>
-              {notification.map((u, row) => {
+              {notifications.map((u, row) => {
                 return (
                   <tr key={row}>
                     {LIST_SPEC_NOTIFICATION.columnGetters.map((col) => {

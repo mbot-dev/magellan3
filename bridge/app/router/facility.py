@@ -76,17 +76,17 @@ async def update_facility_info(request):
             return JSONResponse({'count': 1})
         
 
-async def get_standard(request):
+async def get_notification(request):
     pool = get_pool(request.app)
     facility_id = request.query_params['facility_id']
     async with pool().acquire() as conn:
         facility_quoted = add_quote(facility_id)
-        sql = st_ql('m_standard', facility_quoted)
+        sql = st_ql('m_notification', facility_quoted)
         rows = await conn.fetch(sql)
         return JSONResponse([json.loads(row.get('record')) for row in rows] if rows is not None else [])
 
 
-async def replace_standard(request):
+async def update_notification(request):
     pool = get_pool(request.app)
     data = await request.json()
     async with pool().acquire() as conn:
@@ -94,10 +94,10 @@ async def replace_standard(request):
             if not data or len(data) == 0:
                 return JSONResponse({'count': 0})
             facility_id = data[0].get('facility_id')
-            del_ = f'delete from m_standard where facility_id = {add_quote(facility_id)}'
+            del_ = f'delete from m_notification where facility_id = {add_quote(facility_id)}'
             await conn.execute(del_)
             for d in data:
-                await insert(conn, 'm_standard', d)
+                await insert(conn, 'm_notification', d)
             return JSONResponse({'count': len(data)})
 
 

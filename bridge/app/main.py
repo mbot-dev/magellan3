@@ -86,8 +86,8 @@ routes = [
                 facility.replace_time_schedule,
                 methods=["POST"],
             ),
-            Route("/facility/standard", facility.get_standard, methods=["GET"]),
-            Route("/facility/standard", facility.replace_standard, methods=["POST"]),
+            Route("/facility/notification", facility.get_notification, methods=["GET"]),
+            Route("/facility/notification", facility.update_notification, methods=["PUT"]),
             Route("/facility/{id}", facility.update_facility_info, methods=["PUT"]),
             # Patient
             Route("/patients", patient.get, methods=["GET"]),
