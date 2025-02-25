@@ -70,7 +70,7 @@ const SignUp = () => {
     const asyncRegister = async (payload) => {
       try {
         // ここで登録される
-        const user = await margaret.geApi("user").signUp(payload);
+        const user = await margaret.getApi("user").signUp(payload);
         user.currFc = user.facilities[0].id;
         // Save username to local storage
         const { username } = user;

@@ -194,7 +194,6 @@ async def sign_up(request):
                     ti['id'] = str(uuid.uuid4())
                     ti['patient_id'] = tp.get('id')
                     await insert(conn, 'm_health_insurance', ti)
-            
             # Copy all procedure_catalogue to m_using_procedure
             ql_ = 'select row_to_json(c.*) as catalogue from procedure_catalogue c order by c.entity_order'
             rows = await conn.fetch(ql_)
@@ -220,6 +219,7 @@ async def sign_up(request):
             # 医療機関（facility） も検索され、配列になっている
             # 医師を選択するため、医療機関内の医師を検索する
             # 医療機関内の診療科も検索する
+            get_logger(__name__).info('4')
             for f in ret.get('facilities'):
                 sql = licence_ql(add_quote(f.get('id')), add_quote('doctor'))
                 rows = await conn.fetch(sql)
