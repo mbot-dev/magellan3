@@ -27,8 +27,9 @@ class FacilityService {
     return await fetchGET(path, params);
   }
 
-  async updateNotifications(payload) {
+  async updateNotifications(facility_id, data) {
     const path = `${FACILITY_URL}/notification`;
+    const payload = { facility_id, data };
     return await fetchPUT(path, payload);
   }
 

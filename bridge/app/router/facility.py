@@ -79,6 +79,7 @@ async def update_facility_info(request):
 async def get_notification(request):
     pool = get_pool(request.app)
     facility_id = request.query_params['facility_id']
+    
     async with pool().acquire() as conn:
         facility_quoted = add_quote(facility_id)
         sql = st_ql('m_notification', facility_quoted)
@@ -88,14 +89,15 @@ async def get_notification(request):
 
 async def update_notification(request):
     pool = get_pool(request.app)
-    data = await request.json()
+    payload = await request.json()
+    facility_id = payload.get('facility_id')
+    data = payload.get('data')
     async with pool().acquire() as conn:
         async with conn.transaction():
-            if not data or len(data) == 0:
-                return JSONResponse({'count': 0})
-            facility_id = data[0].get('facility_id')
             del_ = f'delete from m_notification where facility_id = {add_quote(facility_id)}'
             await conn.execute(del_)
+            if not data or len(data) == 0:
+                return JSONResponse({'count': 0})
             for d in data:
                 await insert(conn, 'm_notification', d)
             return JSONResponse({'count': len(data)})

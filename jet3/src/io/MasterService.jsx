@@ -173,7 +173,7 @@ class MasterService {
   }
 
   // Notification
-  async listNotification() {
+  async listNotifications() {
     const path = `${BASE_URL}/notification`;
     return await fetchGET(path);
   }
