@@ -21,7 +21,7 @@ class RcpProcedure(RcpBase):
         return self.round_up((q - lo) / step)
 
     def kizami_santei(self, base, lo, hi, step, step_tensu, q):
-        get_logger(__name__).info(f'Step santei base={base}, lo={lo}, hi={hi}, step={step}, step_tensu={step_tensu}, q={q}')
+        get_logger(__name__).debug(f'Step santei base={base}, lo={lo}, hi={hi}, step={step}, step_tensu={step_tensu}, q={q}')
         return self.half_round_up(base + self.step_value(lo, hi, step, q)*step_tensu)
 
     def calc_tensu(self, proc): # 診療行為の点数　きざみ算定の場合に点数を計算する

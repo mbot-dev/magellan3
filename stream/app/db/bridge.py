@@ -219,31 +219,32 @@ class Bridge:
         group = self.add_quote("999")  # 病名を含む
         sql = f"""
             select row_to_json(t) as record from (
-                with bundles as (
-                    select b.karte_id, b.facility_id, b.patient_id, b.his_id, b.provider_number, b.created_at, b.updated_at, b.status, 
-                    b.group, b.entity, b.name, b.quantity, b.unit, b.issued_to, b.oral, b.prn, b.topical, b.temporary, b.freq_per_day,
-                    (select json_agg(c) from (select i.code, i.name, i.quantity, i.unit from m_claim_item i where i.bundle_id = b.id) c) as claim_items 
-                    from m_bundle b
-                ), his as (
-                    select h.*,
-                    (select json_agg(p.*) from m_public_health_insurance p where p.insurance_id = h.id) as public_insurance
-                    from m_health_insurance h
-                ), ts as (
-                    select t.id, t.facility_id,
-                    (select json_agg(h) from (select name from m_holiday where schedule_id = t.id) h) as holidays,
-                    (select json_agg(w) from (select name, am_start, am_end, pm_start, pm_end from m_week_schedule where schedule_id = t.id) w) as week_days
-                    from m_time_schedule t
-                )
-                select
-                    k.*,
-                    (select json_agg(b.*) from bundles b where b.karte_id = k.id and b.group <= {group}) as p,
-                    (select to_json(h.*) from his h where h.id = k.his_id) as his,
-                    (select to_json(t.*) from ts t where t.facility_id = k.facility_id) as time_schedule,
-                    (select to_json(f) from (select id, name, telephone from m_facility where id = k.facility_id) f) as facility,
-                    (select to_json(u) from (select id, full_name, license from m_user where id = k.physician_id) u) as user,
-                    (select to_json(p) from (select id, pt_id, full_name, kana, gender, dob from m_patient where id = k.patient_id) p) as patient
-                    from (select * from m_karte_entry where id = {id_quote}) as k
-            )t
+            with bundles as (
+                select b.karte_id, b.facility_id, b.patient_id, b.his_id, b.provider_number, b.created_at, b.updated_at, b.status, 
+                b.group, b.entity, b.name, b.quantity, b.unit, b.issued_to, b.oral, b.prn, b.topical, b.temporary, b.freq_per_day,
+                (select json_agg(c) from (select i.code, i.name, i.quantity, i.unit from m_claim_item i where i.bundle_id = b.id) c) as claim_items 
+                from m_bundle b
+            ), his as (
+                select h.*,
+                (select json_agg(p.*) from m_public_health_insurance p where p.insurance_id = h.id) as public_insurance
+                from m_health_insurance h
+            ), ts as (
+                select t.id, t.facility_id,
+                (select json_agg(h) from (select name from m_holiday where schedule_id = t.id) h) as holidays,
+                (select json_agg(w) from (select day, name, am_start, am_end, pm_start, pm_end from m_week_schedule where schedule_id = t.id) w) as week_days
+                from m_time_schedule t
+            )
+            select
+                k.*,
+                (select json_agg(b.*) from bundles b where b.karte_id = k.id and b.group <= {group}) as p,
+                (select to_json(h.*) from his h where h.id = k.his_id) as his,
+                (select to_json(t.*) from ts t where t.facility_id = k.facility_id) as time_schedule,
+                (select json_agg(n.*) from m_notification n where n.facility_id = k.facility_id) as notification,
+                (select to_json(f) from (select id, name, telephone from m_facility where id = k.facility_id) f) as facility,
+                (select to_json(u) from (select id, full_name, license from m_user where id = k.physician_id) u) as user,
+                (select to_json(p) from (select id, pt_id, full_name, kana, gender, dob from m_patient where id = k.patient_id) p) as patient
+                from (select * from m_karte_entry where id = {id_quote}) as k
+        )t
         """
         row = await self.large.fetchrow(sql)
         return json.loads(row.get("record")) if row is not None else None

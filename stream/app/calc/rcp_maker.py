@@ -195,6 +195,6 @@ class RcpMaker(Receipt):
 
         rcp['receipt_items'] = comments + procedures + medicines + other_mat + oxygen + nitrogen
         rcp = self.set_relations(rcp)
-        get_logger(__name__).info(pretty_dumps(rcp, 'z3 result'))
+        get_logger(__name__).debug(pretty_dumps(rcp, 'z3 result'))
 
         return rcp

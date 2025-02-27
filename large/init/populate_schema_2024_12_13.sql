@@ -1020,6 +1020,9 @@ create index on m_using_input(facility_id);
 -- input
 create index on input_item(input_catalog_id);
 
+-- notificaiton
+create index on m_notification(facility_id);
+
 -- disease stamp
 create index on m_disease_stamp(facility_id, icd1012);
 

@@ -50,7 +50,7 @@ class S110(SBase):
             self.bundles
         )
         if len(self.base) != 1:
-            get_logger(__name__).info("110 base is not 1")
+            get_logger(__name__).debug("110 base is not 1")
             return []
         normalized = list(map(self.normalize, self.base))
         get_logger(__name__).debug(

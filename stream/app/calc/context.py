@@ -2,12 +2,14 @@ from datetime import datetime
 from pathlib import Path
 import csv
 from flaretool.holiday import JapaneseHolidays
+from ..util.tracer import get_logger, pretty_dumps
 
 """
 加算数 1148 select tensu_kbn, kbn_no, code, name, unit, col_068 from master_procedure where hosp_clinic_flg!='1' and in_out_flg !='1' and name ~ '加算' order by tensu_kbn, kbn_no, code;
 加算数 1825 select tensu_kbn, kbn_no, code, name, unit, col_068 from master_procedure where name ~ '加算' order by tensu_kbn, kbn_no, code;
 """
 
+DEBUG = False
 
 class Context:
     PATH_GAIZINKEN = Path("app/data/gaizinken.csv")
@@ -38,12 +40,16 @@ class Context:
         self.amed = None
         self.pmst = None
         self.pmed = None
-        self.standards: dict
+        self.notification: dict
         self.setup()
 
     def setup(self):
         self.age = self.calculate_age()
-        self.standards = dict()
+        self.notification = dict()
+
+        if self.karte.get("notification") and len(self.karte.get("notification")) > 0:
+            for n in self.karte.get("notification"):
+                self.notification[n.get("name")] = n.get("code")
 
         try:
             ts = self.karte.get("time_schedule")
@@ -60,30 +66,23 @@ class Context:
                     break
 
             # カルテが作成された日の標榜時間を取得
-            created_weekday = self.datetime_from_created_at().isoweekday()
+            created_weekday = self.datetime_from_created_at().isoweekday() # 1(Mon) to 7(Sun)
             for w in week_days:
-                if w.get("day") == created_weekday:
-                    self.amst = (
-                        datetime.strptime(w.get("am_start"), "%H:%M").time()
-                        if w.get("am_start") != ""
-                        else None
-                    )  # 09:00
-                    self.amed = (
-                        datetime.strptime(w.get("am_end"), "%H:%M").time()
-                        if w.get("am_end") != ""
-                        else None
-                    )  # 13:00
-                    self.pmst = (
-                        datetime.strptime(w.get("pm_start"), "%H:%M").time()
-                        if w.get("pm_start") != ""
-                        else None
-                    )  # 15:00
-                    self.pmed = (
-                        datetime.strptime(w.get("pm_end"), "%H:%M").time()
-                        if w.get("pm_end") != ""
-                        else None
-                    )  # 18:30
+                if w.get("day") == created_weekday:  # compare with isoweekday
+                    self.amst = datetime.strptime(w.get("am_start"), "%H:%M").time() if w.get("am_start") else None
+                    self.amed = datetime.strptime(w.get("am_end"), "%H:%M").time() if w.get("am_end") != "" else None
+                    self.pmst = datetime.strptime(w.get("pm_start"), "%H:%M").time() if w.get("pm_start") != "" else None
+                    self.pmed = datetime.strptime(w.get("pm_end"), "%H:%M").time() if w.get("pm_end") != "" else None
                     break
+            if DEBUG:
+                get_logger(__name__).info(f"休日: {holidays}")
+                get_logger(__name__).info(f"週日: {week_days}")
+                get_logger(__name__).info(f"休診日: {self.holiday_of_week}")
+                get_logger(__name__).info(f"カルテ作成曜日: {created_weekday}")
+                get_logger(__name__).info(f"午前開始: {self.amst}")
+                get_logger(__name__).info(f"午前終了: {self.amed}")
+                get_logger(__name__).info(f"午後開始: {self.pmst}")
+                get_logger(__name__).info(f"午後終了: {self.pmed}")
         except Exception as e:
             print(e)
 
@@ -185,12 +184,14 @@ class Context:
 
     def 標榜時間(self):
         t = self.time_from_datetime(self.datetime_from_created_at())  # 10:00 ..
+        get_logger(__name__).info(f"Karte created at: {t}")
         in_am = False
         in_pm = False
         if self.amst and self.amed:
             in_am = self.amst <= t <= self.amed
         if self.pmst and self.pmed:
             in_pm = self.pmst <= t <= self.pmed
+        get_logger(__name__).info(f"標榜時間: {in_am} {in_pm}")
         return in_am or in_pm
 
     def 時間内(self):
@@ -217,17 +218,7 @@ class Context:
 
     # --------------------------------------------------------------------------------------------
     def 施設基準(self, name):
-        # Test
-        if name in [
-            "明細書発行体制等加算",
-            "一般名処方加算1",
-            "一般名処方加算2",
-            "外来感染対策向上加算",
-            "機能強化加算",
-            "外迅検",
-        ]:
-            return True
-        return self.standards.get(name, False)
+        return self.notification.get(name, False)
 
     def 届出(self, name):
         return self.施設基準(name)

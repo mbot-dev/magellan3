@@ -84,8 +84,8 @@ class Container(SBase):
         auto_add, names = self.injector.inject_from(self.context.get_karte())
         if len(auto_add) == 0 or len(names) == 0:
             return
-        get_logger(__name__).info(pretty_dumps(auto_add, "auto_add items"))
-        get_logger(__name__).info(pretty_dumps(names, "variable names"))
+        get_logger(__name__).debug(pretty_dumps(auto_add, "auto_add items"))
+        get_logger(__name__).debug(pretty_dumps(names, "variable names"))
         # Solve by Z3
         accept_to_add = []
         bools = [
@@ -109,16 +109,16 @@ class Container(SBase):
                 v = getattr(self.context, nl[1])(n)
             else:
                 v = getattr(self.context, nm)()  # 乳幼児3_55 etc
-            get_logger(__name__).info(f"{n}: {v}")
+            get_logger(__name__).debug(f"{n}: {v}")
             s.add(b if v else Not(b))
         # Check satisfiability
         if s.check() == sat:
             m = s.model()
             for b, p in zip(bools, auto_add):
-                get_logger(__name__).info(f"{p.get('name')}: {is_true(m[b])}")
+                get_logger(__name__).debug(f"{p.get('name')}: {is_true(m[b])}")
                 if is_true(m[b]):
                     accept_to_add.append(p)
-            get_logger(__name__).info(pretty_dumps(accept_to_add, "自動算定項目"))
+            get_logger(__name__).debug(pretty_dumps(accept_to_add, "自動算定項目"))
         else:
             get_logger(__name__).warning(f"自動算定: {s.check()}")
             raise NotSatisfiedException()
@@ -126,7 +126,7 @@ class Container(SBase):
         算定回数フィルターを通す
         """
         accept_to_add = await self.filter_santei_kaisu(procedures=accept_to_add)
-        get_logger(__name__).info(
+        get_logger(__name__).debug(
             pretty_dumps(accept_to_add, "自動算定項目(フィルター後)")
         )
         """
@@ -150,20 +150,20 @@ class Container(SBase):
         for p in self.get_procedures():
             under_limit = p.get("under_limit", True)
             if not under_limit:
-                get_logger(__name__).info(f"{p.get('name')} 算定回数オーバー取れない")
+                get_logger(__name__).debug(f"{p.get('name')} 算定回数オーバー取れない")
                 p["算定"] = "取れない"
                 continue
             if p.get("has_ct"):
-                get_logger(__name__).info(f"{p.get('name')} 制約あり")
+                get_logger(__name__).debug(f"{p.get('name')} 制約あり")
                 entries.append(p)
             else:
-                get_logger(__name__).info(f"{p.get('name')} 取れる")
+                get_logger(__name__).debug(f"{p.get('name')} 取れる")
                 p["算定"] = "取れる"
 
         if len(entries) == 0:
             return
 
-        get_logger(__name__).info([p.get("name") for p in entries])
+        get_logger(__name__).debug([p.get("name") for p in entries])
 
         if len(entries) == 1:
             entries[0]["算定"] = "取れる"
@@ -243,8 +243,8 @@ class Container(SBase):
                 q.append(b1)
                 q.append(b2)
 
-        get_logger(__name__).info(p)
-        get_logger(__name__).info(q)
+        get_logger(__name__).debug(p)
+        get_logger(__name__).debug(q)
 
         # 充足可能性を確認
         s = Solver()
@@ -255,9 +255,9 @@ class Container(SBase):
             for i in range(len(entries)):
                 name = entries[i].get("name")
                 toreru = is_true(m[b[i]])
-                get_logger(__name__).info(f"{name}: {toreru}")
+                get_logger(__name__).debug(f"{name}: {toreru}")
                 entries[i]["算定"] = "取れる" if toreru else "取れない"
-            get_logger(__name__).info(pretty_dumps(self.get_procedures(), "算定結果"))
+            get_logger(__name__).debug(pretty_dumps(self.get_procedures(), "算定結果"))
         else:
             get_logger(__name__).warning("充足可能性なし")
             raise NotSatisfiedException()
@@ -285,17 +285,17 @@ class Container(SBase):
             if group == "000":  # 病名
                 continue
             child_bundles = list(member)
-            get_logger(__name__).info(f"group: {group} {len(child_bundles)}")
+            get_logger(__name__).debug(f"group: {group} {len(child_bundles)}")
             mapped_class = self.class_from_group(group, entity)
             self.children.append(mapped_class(self.context, child_bundles))
 
         # 各診療行為クラスに正規化（基本項目に加算がつく形、診療行為と医薬品及び特定器材をセットの形にする ）を提出させる
         normalized = []
         for child in self.children:
-            get_logger(__name__).info(f"child: {child}")
+            get_logger(__name__).debug(f"child: {child}")
             normalized += await child.aggregate()
         # normalized配列からレセプトを作成し保存する
-        get_logger(__name__).info(pretty_dumps(normalized, "Normalized"))
+        get_logger(__name__).debug(pretty_dumps(normalized, "Normalized"))
         rcp = [self.rcp_maker.calculate(n) for n in normalized]
         receipt_data = dict()
         receipt_data["p"] = rcp
@@ -317,17 +317,17 @@ class Container(SBase):
             for item in bdl.get("receipt_items"):
                 line = [f"{item.get(k)}" for k in keys]
                 line = ",".join(line)
-                get_logger(__name__).info(line)
+                get_logger(__name__).debug(line)
         try:
-            get_logger(__name__).info("starting Save")
-            get_logger(__name__).info(pretty_dumps(receipt_data, "Save"))
+            get_logger(__name__).debug("starting Save")
+            get_logger(__name__).debug(pretty_dumps(receipt_data, "Save"))
             await self.bridge.save_receipt(receipt_data)
-            get_logger(__name__).info("end Save")
+            get_logger(__name__).debug("end Save")
         except Exception as e:
-            get_logger(__name__).info("---------------------------------")
-            get_logger(__name__).info("Error Save")
+            get_logger(__name__).debug("---------------------------------")
+            get_logger(__name__).debug("Error Save")
             get_logger(__name__).error(e)
-            get_logger(__name__).info("---------------------------------")
+            get_logger(__name__).debug("---------------------------------")
             raise e
 
     async def set_constraints_(self, procedures):
@@ -435,7 +435,7 @@ class Container(SBase):
             t.sort(key=grouper)
             for unit, g in groupby(t, grouper):
                 unit_g = list(g)
-                get_logger(__name__).info(f"unit_code: {unit} {len(unit_g)}")
+                get_logger(__name__).debug(f"unit_code: {unit} {len(unit_g)}")
 
                 if unit == "121":  # 1日あたり
                     zisseki = await self.get_day_ac_(fc_id, pt_id, dt, unit_g)
@@ -525,7 +525,7 @@ class Container(SBase):
         res = await self.bridge.count_patient_procedures(
             fc_id, pt_id, [p.get("code") for p in unit_g]
         )
-        get_logger(__name__).info(pretty_dumps(res, "患者の実績"))
+        get_logger(__name__).debug(pretty_dumps(res, "患者の実績"))
         return res
 
     async def get_day_ac_(self, fc_id, pt_id, dt, unit_g):
@@ -576,7 +576,7 @@ class Container(SBase):
             actual_count = z.get("actual_count")
             upper_limit = p.get("upper_limit")
             under_limit = actual_count < upper_limit
-            get_logger(__name__).info(
+            get_logger(__name__).debug(
                 f"actual_count, upper_limit, under_limit: {actual_count}, {upper_limit}, {under_limit}"
             )
             if index == 0:
@@ -622,11 +622,11 @@ class Container(SBase):
         target.sort(key=sorter)
         res = await self.bridge.get_tensu_in([p.get("code") for p in target])
         if len(res) != len(target):
-            get_logger(__name__).info("----------------------------------------------")
+            get_logger(__name__).debug("----------------------------------------------")
             get_logger(__name__).error(f"tensu={len(res)} procedure={len(target)}")
             get_logger(__name__).error(pretty_dumps(target, "診療行為"))
             get_logger(__name__).error(pretty_dumps(res, "点数 Response"))
-            get_logger(__name__).info("----------------------------------------------")
+            get_logger(__name__).debug("----------------------------------------------")
             raise MasterNotFoundException()
         get_logger(__name__).debug(pretty_dumps(res, "診療行為点数"))
         for p, r in zip(target, res):

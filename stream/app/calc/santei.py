@@ -41,7 +41,7 @@ class Santei:
             karte = await bridge.stream_get_karte(self.k_id)
             if karte is None:
                 raise KarteNotFoundException()
-            get_logger(__name__).debug(pretty_dumps(karte, " Target Karte"))
+            get_logger(__name__).info(pretty_dumps(karte, " Target Karte"))
 
             # Start
             start = time()
