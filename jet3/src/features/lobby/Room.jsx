@@ -20,8 +20,8 @@ const Room = ({ subMenus, onChild, children }) => {
                 key={i}
                 className={
                   selected
-                    ? "w3-hover-light-gray z3-menu-li z3-border-bottom-secondary"
-                    : "w3-hover-light-gray z3-menu-li z3-border-bottom-surface"
+                    ? "w3-hover-light-gray z3-menu-li z3-surface"
+                    : "w3-hover-light-gray z3-menu-li z3-background"
                 }
                 onClick={() => handleClick(i)}
               >
