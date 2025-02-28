@@ -3,10 +3,10 @@ export const SUBMENU_SPEC_FACILITY = {
   entries: [
     { path: 0, label: "基本情報" },
     { path: 1, label: "標榜事項" },
-    { path: 2, label: "診療行為選択" },
-    { path: 3, label: "入力データ選択" },
-    { path: 4, label: "施設基準" },
-    { path: 5, label: "職員管理" },
+    { path: 3, label: "施設基準" },
+    { path: 4, label: "診療行為選択" },
+    { path: 5, label: "入力データ選択" },
+    { path: 6, label: "職員管理" },
   ],
 };
 

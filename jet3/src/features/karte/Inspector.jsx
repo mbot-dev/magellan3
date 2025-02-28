@@ -88,7 +88,7 @@ const Inspector = ({ patient }) => {
         <div className="z3-padding-box" style={{ "--pdd": "0 16px 16px 0" }}>
           <div className="z3-flex">
             <div className="z3-flex-grow" />
-            <div className="z3-menu-ul z3-text-09-rem">
+            <div className="z3-sub-menu-ul z3-text-09-rem">
               {MY_SECTIONS.map((s, index) => {
                 const { id, name } = s;
                 const selected = tabIndex === index;
@@ -96,8 +96,8 @@ const Inspector = ({ patient }) => {
                   <li
                     className={
                       selected
-                        ? "w3-hover-light-gray z3-menu-li z3-border-bottom-secondary"
-                        : "w3-hover-light-gray z3-menu-li z3-border-bottom-surface"
+                        ? "z3-sub-menu-li z3-surface"
+                        : "z3-sub-menu-li z3-karte"
                     }
                     key={id}
                     data-index={index}

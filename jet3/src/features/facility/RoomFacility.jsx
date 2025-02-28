@@ -20,9 +20,9 @@ const RoomFacility = () => {
     <Room subMenus={SUBMENU_SPEC_FACILITY} onChild={handleChild}>
       <FacilityEditor show={(myChild === 0).toString()} />
       <Hyobo show={(myChild === 1).toString()} />
-      <ProcedureSelection show={(myChild === 2).toString()} />
-      <InputSelection show={(myChild === 3).toString()} />
-      <Standards show={(myChild === 4).toString()} />
+      <Standards show={(myChild === 2).toString()} />
+      <ProcedureSelection show={(myChild === 3).toString()} />
+      <InputSelection show={(myChild === 4).toString()} />
       <UserManagement show={(myChild === 5).toString()} />
     </Room>
   );

@@ -12,7 +12,7 @@ const Room = ({ subMenus, onChild, children }) => {
   return (
     <Layout>
       <Header>
-        <ul className="z3-menu-ul">
+        <ul className="z3-sub-menu-ul">
           {subMenus.entries.map((m, i) => {
             const selected = m.path === child;
             return (
@@ -20,8 +20,8 @@ const Room = ({ subMenus, onChild, children }) => {
                 key={i}
                 className={
                   selected
-                    ? "w3-hover-light-gray z3-menu-li z3-surface"
-                    : "w3-hover-light-gray z3-menu-li z3-background"
+                    ? "z3-sub-menu-li z3-surface"
+                    : "z3-sub-menu-li z3-background"
                 }
                 onClick={() => handleClick(i)}
               >

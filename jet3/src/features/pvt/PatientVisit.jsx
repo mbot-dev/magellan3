@@ -280,24 +280,26 @@ const PatientVisit = () => {
                     {/* <td className="z3-middle-td">{valid}</td> */}
                     <td className="z3-middle-td">
                       <ActionContainer>
-                        <button
-                          className="w3-button w3-padding-small z3-palette-first"
+                        <ul className="z3-sub-menu-ul">
+                        <li
+                          className="z3-sub-menu-li w3-padding-small"
                           onClick={() => handleSelect("karte", row)}
                         >
                           {TEXT_KARTE}
-                        </button>
-                        <button
-                          className="w3-button w3-padding-small z3-palette-next"
+                        </li>
+                        <li
+                          className="z3-sub-menu-li w3-padding-small"
                           onClick={() => handleSelect("accounting", row)}
                         >
                           {TEXT_ACCOUNTING}
-                        </button>
-                        <button
-                          className="w3-button w3-padding-small z3-palette-last"
+                        </li>
+                        <li
+                          className="z3-sub-menu-li w3-padding-small"
                           onClick={() => handleSelect("insure", row)}
                         >
                           {TEXT_INSURE}
-                        </button>
+                        </li>
+                        </ul>
                       </ActionContainer>
                     </td>
                     <td className="z3-middle-td">

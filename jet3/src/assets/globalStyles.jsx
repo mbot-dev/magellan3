@@ -7,7 +7,7 @@ export const GlobalStyle = createGlobalStyle`
         --surface: ${(props) => props.theme.surface};
         --on-surface: ${(props) => props.theme.onSurface};
         --margaret: #ffeb3b;
-        --on-margaret: #313131;
+        --on-margaret: #212121;
         --primary: ${(props) => props.theme.primary};
         --on-primary: ${(props) => props.theme.onPrimary};
         --primary-selected: ${(props) => props.theme.primarySelected};
