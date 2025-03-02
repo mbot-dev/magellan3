@@ -292,7 +292,13 @@ async def list_notification(pool):
     async with pool().acquire() as conn:
         sql = 'select * from tbl_notification order by code'
         return await fetch_all_as_json(conn, sql)
-
+    
+# Notification
+async def find_notification(pool, entity):
+    async with pool().acquire() as conn:
+        sql = 'select * from tbl_notification where entity = {} order by code'.format(add_quote(entity))
+        return await fetch_all_as_json(conn, sql)
+    
 async def get_prefecture_code(pool, name):
     async with pool().acquire() as conn:
         pref = f'^{name}'

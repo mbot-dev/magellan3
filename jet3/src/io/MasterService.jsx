@@ -177,6 +177,15 @@ class MasterService {
     const path = `${BASE_URL}/notification`;
     return await fetchGET(path);
   }
+
+  // Notification
+  async findNotifications(entity) {
+    const params = encodeURI(
+      `entity=${entity}`
+    );
+    const path = `${BASE_URL}/notification?${params}`;
+    return await fetchGET(path);
+  }
 }
 
 export default MasterService;

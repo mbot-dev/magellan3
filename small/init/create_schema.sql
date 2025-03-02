@@ -544,6 +544,7 @@ create table IF NOT EXISTS tbl_short_name (
 );
 
 create table IF NOT EXISTS tbl_notification (
+    entity varchar(255) not null,
     code varchar(255) not null,
     kbn varchar(255) not null,
     name varchar(255) not null,

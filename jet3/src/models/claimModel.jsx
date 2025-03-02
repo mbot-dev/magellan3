@@ -1,48 +1,52 @@
 import { v4 } from "uuid";
+import dateFormat from "dateformat";
+import { ISO_DATE_TIME } from "./karteCtx";
+import { halfFrom } from "../util/strings";
+
 // Claim Item の種類 MML 由来
-export const CLAIM_PROCEDURE = 1; // 診療行為
-export const CLAIM_MEDICINE = 2; // 医薬品
-export const CLAIM_MATERIAL = 3; // 器材
-export const CLAIM_INSTRUCTION = 4; // 用法（固有）
-export const CLAIM_COMMENT = 5; // コメント（固有）
-export const CLAIM_BODY_PART = 6; // 部位（固有）
+const CLAIM_PROCEDURE = 1; // 診療行為
+const CLAIM_MEDICINE = 2; // 医薬品
+const CLAIM_MATERIAL = 3; // 器材
+const CLAIM_INSTRUCTION = 4; // 用法（固有）
+const CLAIM_COMMENT = 5; // コメント（固有）
+const CLAIM_BODY_PART = 6; // 部位（固有）
 
 // 用法
-export const DOSE_TYPE_INTERNAL = "1"; // 内用
-export const DOSE_TYPE_TOPICAL = "6"; // 外用
-export const DOSE_TYPE_INJECTION = "4"; // 注射
-export const DOSE_TYPE_OTHER = "3"; // その他
-export const DOSE_TYPE_DENTAL = "8"; // 歯科用
-export const DOSE_TYPE_DIAGNOSIS = "30"; // 病名をカラー化するため
+const DOSE_TYPE_INTERNAL = "1"; // 内用
+const DOSE_TYPE_TOPICAL = "6"; // 外用
+const DOSE_TYPE_INJECTION = "4"; // 注射
+const DOSE_TYPE_OTHER = "3"; // その他
+const DOSE_TYPE_DENTAL = "8"; // 歯科用
+const DOSE_TYPE_DIAGNOSIS = "30"; // 病名をカラー化するため
 
 // 院内・院外処方
-export const INTERNAL_MEDICINE = "1"; // 院外処方
-export const EXTERNAL_MEDICINE = "2"; // 院内処方
+const INTERNAL_MEDICINE = "1"; // 院外処方
+const EXTERNAL_MEDICINE = "2"; // 院内処方
 
 // コンポジットデザイン用のグルーピングコード
 // ソート順に KarteBoard へ表示される
-export const GROUP_DIAGNOSIS = "000"; // 病名
-export const GROUP_FIRST_VISIT = "110"; // 初診
-export const GROUP_FOLLOW_UP_VISIT = "120"; // 再診
+const GROUP_DIAGNOSIS = "000"; // 病名
+const GROUP_FIRST_VISIT = "110"; // 初診
+const GROUP_FOLLOW_UP_VISIT = "120"; // 再診
 // 拡張
-export const GROUP_VITAL_SIGN = "A100"; // バイタルサイン
-export const GROUP_PHYSICAL_EXAM = "A200"; // 身体所見
-export const GROUP_CAMERA = "B100"; // Camera
-export const GROUP_SCHEMA = "B200"; // シェーマ
-export const GROUP_REF_IMAGE = "Z100"; // 画像
-export const GROUP_PDF = "Z110"; // PDFファイル
+const GROUP_VITAL_SIGN = "A100"; // バイタルサイン
+const GROUP_PHYSICAL_EXAM = "A200"; // 身体所見
+const GROUP_CAMERA = "B100"; // Camera
+const GROUP_SCHEMA = "B200"; // シェーマ
+const GROUP_REF_IMAGE = "Z100"; // 画像
+const GROUP_PDF = "Z110"; // PDFファイル
 // 以下テスト
-export const GROUP_BLOOD_SUGAR_LEVEL = "C100";
-export const GROUP_DIABETES = "C110";
-export const GROUP_BONE_DENSITY = "D100";
-export const GROUP_SMI = "D110";
-export const GROUP_LCS = "D120";
-export const GROUP_QOL = "E100";
+const GROUP_BLOOD_SUGAR_LEVEL = "C100";
+const GROUP_DIABETES = "C110";
+const GROUP_BONE_DENSITY = "D100";
+const GROUP_SMI = "D110";
+const GROUP_LCS = "D120";
+const GROUP_QOL = "E100";
 
-export const VISIT_TYPE_FIRST = "初診";
-export const VISIT_TYPE_FOLLOW_UP = "再診";
+const VISIT_TYPE_FIRST = "初診";
+const VISIT_TYPE_FOLLOW_UP = "再診";
 
-export const MASTER_ATTR_PROCEDURE = [
+const MASTER_ATTR_PROCEDURE = [
   "col_001",
   "code",
   "name",
@@ -83,7 +87,7 @@ export const MASTER_ATTR_PROCEDURE = [
   "col_122",
 ];
 
-export const MASTER_ATTR_MEDICINE = [
+const MASTER_ATTR_MEDICINE = [
   "col_01",
   "code",
   "name",
@@ -97,7 +101,7 @@ export const MASTER_ATTR_MEDICINE = [
   "discontinuedAt",
 ];
 
-export const MASTER_ATTR_MATERIAL = [
+const MASTER_ATTR_MATERIAL = [
   "col_01",
   "code",
   "name",
@@ -108,11 +112,9 @@ export const MASTER_ATTR_MATERIAL = [
   "discontinuedAt",
 ];
 
-export const MASTER_ATTR_INSTRUCTION = ["code", "name"];
-
-export const MASTER_ATTR_COMMENT = ["code", "name"];
-
-export const EXCLUSIVE_ATTR_FOR_ADDITION = [
+const MASTER_ATTR_INSTRUCTION = ["code", "name"];
+const MASTER_ATTR_COMMENT = ["code", "name"];
+const EXCLUSIVE_ATTR_FOR_ADDITION = [
   "col_020",
   "col_046",
   "col_047",
@@ -130,8 +132,8 @@ export const EXCLUSIVE_ATTR_FOR_ADDITION = [
   "col_122",
 ];
 
-export const c16_包括対象検査 = "col_016";
-export const c68_告示等識別区分 = "col_068";
+// 診療行為マスター
+const c68_告示等識別区分 = "col_068";
 const c38_注加算コード = "col_038";
 const c39_注加算通番 = "col_039";
 const 基本項目 = "1";
@@ -140,130 +142,11 @@ const 準用項目 = "5";
 const 注加算 = "7";
 const 通則加算 = "9";
 
-export const isProcedure = (item) => {
-  return item.code.startsWith("1") && item.code.length === 9;
-};
-
-export const isMedicine = (item) => {
-  return item.code.startsWith("6") && item.code.length === 9;
-};
-
-export const isMaterial = (item) => {
-  return item.code.startsWith("7") && item.code.length === 9;
-};
-
-export const isInstruction = (item) => {
-  // 2A50160000000000
-  return (
-    (item.code.startsWith("1") || item.code.startsWith("2")) &&
-    item.code.length === 16
-  );
-};
-
-export const isAdministration = (item) => {
-  return item.code.startsWith("1") && item.code.length === 16;
-};
-
-export const isComment = (item) => {
-  return item.code.startsWith("8") && item.code.length === 9;
-};
-
-export const isEditableComment = (item) => {
-  return isComment(item) && !item.code.startsWith("82");
-};
-
-export const isBodyPart = (item) => {
-  return item.code.startsWith("002");
-};
-
-export const isBaseProcedure = (item) => {
-  return item[c68_告示等識別区分] === 基本項目;
-};
-
-export const isCompositionProcedure = (item) => {
-  return item[c68_告示等識別区分] === 合成項目;
-};
-
-export const isApplicationProcedure = (item) => {
-  return item[c68_告示等識別区分] === 準用項目;
-};
-
-export const is135Procedure = (item) => {
-  return (
-    isBaseProcedure(item) ||
-    isCompositionProcedure(item) ||
-    isApplicationProcedure(item)
-  );
-};
-
-export const isAnnotaionProcedure = (item) => {
-  return item[c68_告示等識別区分] === 注加算;
-};
-
-export const isGeneralProcedure = (item) => {
-  return item[c68_告示等識別区分] === 通則加算;
-};
-
-export const hasSameAnnotaionCode = (item1, item2) => {
-  if (item1[c38_注加算コード] === "0" || item2[c38_注加算コード] === "0") {
-    return false;
-  }
-  return item1[c38_注加算コード] === item2[c38_注加算コード];
-};
-
-export const hasNotSameAnnotaionSerial = (item1, item2) => {
-  return item1[c39_注加算通番] !== item2[c39_注加算通番];
-};
-
-export const isExclusiveAddition = (item) => {
-  // 注と通則加算
-  return (
-    (item[c68_告示等識別区分] === 注加算 ||
-      item[c68_告示等識別区分] === 通則加算) &&
-    item[c38_注加算コード] === "0"
-  );
-};
-
-export const procedureTypeName = (item) => {
-  if (isBaseProcedure(item)) {
-    return "基本項目";
-  }
-  if (isCompositionProcedure(item)) {
-    return "合成項目";
-  }
-  if (isApplicationProcedure(item)) {
-    return "準用項目";
-  }
-  if (isAnnotaionProcedure(item)) {
-    return "注加算";
-  }
-  if (isGeneralProcedure(item)) {
-    return "通則加算";
-  }
-  return "";
-};
-
-export const isOral = (doseType) => doseType === DOSE_TYPE_INTERNAL;
-export const isInjectionMed = (doseType) => doseType === DOSE_TYPE_INJECTION;
-export const isTopical = (doseType) => doseType === DOSE_TYPE_TOPICAL;
-
-export const clinicFilter = (procedureKbn, item, clinicOnly = true) => {
-  if (isProcedure(item)) {
-    return clinicOnly
-      ? item.tensuKbn === procedureKbn.kbn &&
-          item.hospClinicFlg !== "1" &&
-          item.inOutFlg !== "1"
-      : item.tensuKbn === procedureKbn.kbn;
-  }
-  return item;
-};
-
-export const isClaimGroup = (group) => {
-  return group >= "100" && group <= "999";
-};
+const regexp = new RegExp(/^[-+]?[0-9]+(\.[0-9]+)?$/);
+const DEBUG = false;
 
 // Claim の group = 組み合わされた最初の診療行為Itemの診療種区分
-export const ENTITY_BUNDLE = {
+const ENTITY_BUNDLE = {
   disease: {
     entity: "diagnosis", // entity = disease to diagnosis
     category: GROUP_DIAGNOSIS,
@@ -500,7 +383,7 @@ export const ENTITY_BUNDLE = {
   },
 };
 
-export const CLAIM_ITEM_DIAGNOSIS = {
+const CLAIM_ITEM_DIAGNOSIS = {
   id: "",
   category: GROUP_DIAGNOSIS,
   group: GROUP_DIAGNOSIS,
@@ -519,7 +402,7 @@ export const CLAIM_ITEM_DIAGNOSIS = {
   outcome: "",
 };
 
-export const CLAIM_ITEM_CLAIM = {
+const CLAIM_ITEM_CLAIM = {
   id: "",
   category: "",
   group: "",
@@ -537,7 +420,7 @@ export const CLAIM_ITEM_CLAIM = {
   doseType: "", // 内用、外用、注射薬の区別
 };
 
-export const CLAIM_ITEM_CAMERA = {
+const CLAIM_ITEM_CAMERA = {
   id: "",
   category: GROUP_CAMERA,
   group: GROUP_CAMERA,
@@ -558,7 +441,7 @@ export const CLAIM_ITEM_CAMERA = {
   makeModel: "", // Exif model
 };
 
-export const CLAIM_ITEM_SCHEMA = {
+const CLAIM_ITEM_SCHEMA = {
   id: "",
   category: GROUP_SCHEMA,
   group: GROUP_SCHEMA,
@@ -578,7 +461,7 @@ export const CLAIM_ITEM_SCHEMA = {
   body: "",
 };
 
-export const CLAIM_ITEM_IMAGE = {
+const CLAIM_ITEM_IMAGE = {
   id: "",
   category: GROUP_REF_IMAGE,
   group: GROUP_REF_IMAGE,
@@ -598,7 +481,7 @@ export const CLAIM_ITEM_IMAGE = {
   body: "",
 };
 
-export const CLAIM_ITEM_PDF = {
+const CLAIM_ITEM_PDF = {
   id: "",
   category: GROUP_PDF,
   group: GROUP_PDF,
@@ -617,7 +500,7 @@ export const CLAIM_ITEM_PDF = {
   body: "",
 };
 
-export const CLAIM_ITEM_INPUT = {
+const CLAIM_ITEM_INPUT = {
   id: "",
   category: "",
   group: "",
@@ -638,7 +521,7 @@ export const CLAIM_ITEM_INPUT = {
   evalParams: "",
 };
 
-export const STAMP_ITEM_CLAIM = {
+const STAMP_ITEM_CLAIM = {
   id: "",
   category: "",
   group: "",
@@ -651,7 +534,7 @@ export const STAMP_ITEM_CLAIM = {
   doseType: "",
 };
 
-export const RECEIPT_CODE_NAME = {
+const RECEIPT_CODE_NAME = {
   "00": "傷病名",
   11: "初診",
   12: "再診",
@@ -677,7 +560,7 @@ export const RECEIPT_CODE_NAME = {
   80: "その他",
 };
 
-export const RECEIPT_AGGREGATE = {
+const RECEIPT_AGGREGATE = {
   11: "初診",
   12: "再診",
   13: "医学管理",
@@ -692,31 +575,8 @@ export const RECEIPT_AGGREGATE = {
   80: "その他",
 };
 
-// Entity、名称、省略名、点数区分
-// usingProcedureを介して StmpBox に渡される
-// StampBox のタブ名 = 省略名
-// StampTree は entity で保存
-/*
-disease,0,傷病名,病名
-baseCharge,1,初診・再診料,診断,A
-management,2,医学管理等,管理,B
-home,3,在宅医療,在宅,C
-rp,4,処方,処方,F
-injection,5,注射,注射,G
-treatment,6,処置,処置,J
-surgery,7,手術,手術,K
-labTest,8,検体検査,検体,D
-physiology,9,生体検査,生体,D
-image,10,画像診断,画像,E
-rehabilitation,11,リハビリテーション,リハ,H
-psychiatric,12,精神科専門療法,精神,I
-radiotherapy,13,放射線治療,放射,M
-anesthesia,14,麻酔料,麻酔,L
-pathology,15,病理診断,病理,N
-input,100,臨床データ,入力
-*/
-export const ENTITY_STANDARD_KBN = [
-  { entity: "baseCharge", name: "初診・再診料(A)", abbr: "診断" },  // abbreviated name
+const ENTITY_STANDARD_KBN = [
+  { entity: "baseCharge", name: "初診・再診料(A)", abbr: "診断" }, // abbreviated name
   { entity: "management", name: "医学管理等(B)", abbr: "管理" },
   { entity: "home", name: "在宅医療(C)", abbr: "在宅" },
   { entity: "rp", name: "処方(F)", abbr: "処方" },
@@ -730,13 +590,13 @@ export const ENTITY_STANDARD_KBN = [
   { entity: "psychiatric", name: "精神科専門療法(I)", abbr: "精神" },
   { entity: "radiotherapy", name: "放射線治療(M)", abbr: "放射" },
   { entity: "anesthesia", name: "麻酔料(L)", abbr: "麻酔" },
-  { entity: "pathology", name: "病理診断(N)", abbr: "病理" }
+  { entity: "pathology", name: "病理診断(N)", abbr: "病理" },
 ];
 
 // マスター検索のDropdown menuに設定する診療行為
 // 検索する診療行為区分、区分番号
 // menuTitle -> Click Dropdown の初期化時に表示する名前
-export const ENTITY_PROCEDURE_KBN = [
+const ENTITY_PROCEDURE_KBN = [
   {
     entity: "diagnosis",
     kbn: "diagnosis",
@@ -752,14 +612,12 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "初診料",
         kbn: "A",
         kbn_no: ["000", "000"],
-        sinku: "11",
         id: v4(),
       },
       {
         name: "再診料",
         kbn: "A",
         kbn_no: ["001", "001"],
-        sinku: "12",
         id: v4(),
       },
     ],
@@ -773,21 +631,18 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "治療関連",
         kbn: "B",
         kbn_no: ["000", "001"],
-        sinku: "13",
         id: v4(),
       },
       {
         name: "地域・施設連携関連",
         kbn: "B",
         kbn_no: ["002", "007"],
-        sinku: "13",
         id: v4(),
       },
       {
         name: "情報提供・安全管理関連",
         kbn: "B",
         kbn_no: ["008", "014"],
-        sinku: "13",
         id: v4(),
       },
     ],
@@ -801,21 +656,18 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "在宅患者診療・指導料",
         kbn: "C",
         kbn_no: ["000", "013"],
-        sinku: "14",
         id: v4(),
       },
       {
         name: "在宅療養指導管理料",
         kbn: "C",
         kbn_no: ["100", "114"],
-        sinku: "14",
         id: v4(),
       },
       {
         name: "在宅療養指導材料料",
         kbn: "C",
         kbn_no: ["150", "170"],
-        sinku: "14",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'C', kbn_no: ['200', '200'], sinku: '140'},
@@ -827,9 +679,9 @@ export const ENTITY_PROCEDURE_KBN = [
     kbn: "F",
     menuTitle: "処方（F）",
     categories: [
-      { name: "院外", kbn: "F", kbn_no: ["400", "400"], sinku: "8", id: v4() },
-      { name: "院内", kbn: "F", kbn_no: ["100", "100"], sinku: "2", id: v4() },
-      { name: "調剤", kbn: "F", kbn_no: ["000", "000"], sinku: "2", id: v4() },
+      { name: "院外", kbn: "F", kbn_no: ["400", "400"], id: v4() },
+      { name: "院内", kbn: "F", kbn_no: ["100", "100"], id: v4() },
+      { name: "調剤", kbn: "F", kbn_no: ["000", "000"], id: v4() },
     ],
   },
   {
@@ -841,14 +693,12 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "注射実施料",
         kbn: "G",
         kbn_no: ["000", "015"],
-        sinku: "3",
         id: v4(),
       },
       {
         name: "無菌製材処理料",
         kbn: "G",
         kbn_no: ["020", "020"],
-        sinku: "3",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'G', kbn_no: ['100', '100'], sinku: '3'},
@@ -864,77 +714,66 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "一般処置",
         kbn: "J",
         kbn_no: ["000", "043"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "救急処置",
         kbn: "J",
         kbn_no: ["044", "052"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "皮膚科処置",
         kbn: "J",
         kbn_no: ["053", "057"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "泌尿器科処置",
         kbn: "J",
         kbn_no: ["058", "070"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "産婦人科処置",
         kbn: "J",
         kbn_no: ["071", "085"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "眼科処置",
         kbn: "J",
         kbn_no: ["086", "093"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "耳鼻咽頭科処置",
         kbn: "J",
         kbn_no: ["095", "115"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "整形外科処置",
         kbn: "J",
         kbn_no: ["116", "119"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "栄養処置",
         kbn: "J",
         kbn_no: ["120", "121"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "ギプス",
         kbn: "J",
         kbn_no: ["122", "129"],
-        sinku: "4",
         id: v4(),
       },
       {
         name: "処置医療機器等加算",
         kbn: "J",
         kbn_no: ["200", "201"],
-        sinku: "4",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'J', kbn_no: ['300', '399'], sinku: '4'},
@@ -950,87 +789,75 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "皮膚・皮下組織",
         kbn: "K",
         kbn_no: ["000", "022"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "筋骨格系・四肢・体幹",
         kbn: "K",
         kbn_no: ["023", "144"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "神経系・頭蓋",
         kbn: "K",
         kbn_no: ["145", "198"],
-        sinku: "5",
         id: v4(),
       },
-      { name: "眼", kbn: "K", kbn_no: ["199", "284"], sinku: "5", id: v4() },
+      { name: "眼", kbn: "K", kbn_no: ["199", "284"], id: v4() },
       {
         name: "耳鼻咽喉",
         kbn: "K",
         kbn_no: ["285", "403"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "顔面・口腔・頸部",
         kbn: "K",
         kbn_no: ["404", "471"],
-        sinku: "5",
         id: v4(),
       },
-      { name: "胸部", kbn: "K", kbn_no: ["472", "537"], sinku: "5", id: v4() },
+      { name: "胸部", kbn: "K", kbn_no: ["472", "537"], id: v4() },
       {
         name: "心・脈管",
         kbn: "K",
         kbn_no: ["538", "628"],
-        sinku: "5",
         id: v4(),
       },
-      { name: "腹部", kbn: "K", kbn_no: ["630", "753"], sinku: "5", id: v4() },
+      { name: "腹部", kbn: "K", kbn_no: ["630", "753"], id: v4() },
       {
         name: "尿路系・副腎",
         kbn: "K",
         kbn_no: ["754", "823"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "男子性器",
         kbn: "K",
         kbn_no: ["824", "843"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "女子性器",
         kbn: "K",
         kbn_no: ["844", "913"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "脳死臓器提供管理料",
         kbn: "K",
         kbn_no: ["914", "915"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "輸血料",
         kbn: "K",
         kbn_no: ["920", "924"],
-        sinku: "5",
         id: v4(),
       },
       {
         name: "手術医療機器等加算",
         kbn: "K",
         kbn_no: ["930", "939"],
-        sinku: "5",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'K', kbn_no: ['940', '940'], sinku: '5'},
@@ -1046,42 +873,36 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "尿・糞便検査",
         kbn: "D",
         kbn_no: ["000", "004"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "血液学的検査",
         kbn: "D",
         kbn_no: ["005", "006"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "生化学的検査(I)",
         kbn: "D",
         kbn_no: ["007", "007"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "生化学的検査(II)",
         kbn: "D",
         kbn_no: ["008", "010"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "免疫学的検査",
         kbn: "D",
         kbn_no: ["011", "016"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "微生物学的検査",
         kbn: "D",
         kbn_no: ["017", "024"],
-        sinku: "6",
         id: v4(),
       },
     ],
@@ -1095,78 +916,67 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "呼吸循環機能検査等",
         kbn: "D",
         kbn_no: ["200", "214"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "超音波検査等",
         kbn: "D",
         kbn_no: ["215", "217"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "監視装置による諸検査",
         kbn: "D",
         kbn_no: ["218", "234"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "脳波検査等",
         kbn: "D",
         kbn_no: ["235", "238"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "神経・筋検査",
         kbn: "D",
         kbn_no: ["239", "242"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "耳鼻咽頭科学的検査",
         kbn: "D",
         kbn_no: ["244", "254"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "眼科学的検査",
         kbn: "D",
         kbn_no: ["255", "282"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "皮膚科学的検査",
         kbn: "D",
         kbn_no: ["282", "282"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "臨床心理・神経心理検査",
         kbn: "D",
         kbn_no: ["283", "285"],
-        sinku: "6",
         id: v4(),
       },
-      { name: "負荷試験等", kbn: "D", kbn_no: ["286", "291"], sinku: "6" },
+      { name: "負荷試験等", kbn: "D", kbn_no: ["286", "291"]},
       {
         name: "ラジオアイソトープ",
         kbn: "D",
         kbn_no: ["292", "294"],
-        sinku: "6",
         id: v4(),
       },
       {
         name: "内視鏡検査",
         kbn: "D",
         kbn_no: ["295", "325"],
-        sinku: "6",
         id: v4(),
       },
     ],
@@ -1180,35 +990,30 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "透視・診断",
         kbn: "E",
         kbn_no: ["000", "001"],
-        sinku: "7",
         id: v4(),
       },
       {
         name: "撮影料",
         kbn: "E",
         kbn_no: ["002", "002"],
-        sinku: "7",
         id: v4(),
       },
       {
         name: "造影剤注入手技",
         kbn: "E",
         kbn_no: ["003", "003"],
-        sinku: "7",
         id: v4(),
       },
       {
         name: "核医学診断料",
         kbn: "E",
         kbn_no: ["100", "102"],
-        sinku: "7",
         id: v4(),
       },
       {
         name: "コンピュータ断層撮影診断料",
         kbn: "E",
         kbn_no: ["200", "203"],
-        sinku: "7",
         id: v4(),
       },
     ],
@@ -1222,21 +1027,18 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "疾患別リハビリ",
         kbn: "H",
         kbn_no: ["000", "003"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "総合計画評価",
         kbn: "H",
         kbn_no: ["003", "003"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "訓練別リハビリ",
         kbn: "H",
         kbn_no: ["004", "008"],
-        sinku: "8",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'H', kbn_no: ['100', '100'], sinku: '8'}
@@ -1251,42 +1053,36 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "精神科専門療法関連",
         kbn: "I",
         kbn_no: ["000", "008"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "デイ・ケア、ナイト・ケア関連",
         kbn: "I",
         kbn_no: ["009", "010"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "指導・管理関連",
         kbn: "I",
         kbn_no: ["011", "013"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "診療科関連",
         kbn: "I",
         kbn_no: ["014", "014"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "重度認知症関連",
         kbn: "I",
         kbn_no: ["015", "015"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "精神科在宅関連",
         kbn: "I",
         kbn_no: ["016", "016"],
-        sinku: "8",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'I', kbn_no: ['100', '100'], sinku: '8'}
@@ -1301,42 +1097,36 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "管理料",
         kbn: "M",
         kbn_no: ["000", "000"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "体外照射",
         kbn: "M",
         kbn_no: ["001", "001"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "全身照射",
         kbn: "M",
         kbn_no: ["002", "002"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "電磁波温熱療法",
         kbn: "M",
         kbn_no: ["003", "003"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "密封小線源治療",
         kbn: "M",
         kbn_no: ["004", "004"],
-        sinku: "8",
         id: v4(),
       },
       {
         name: "血液照射",
         kbn: "M",
         kbn_no: ["005", "005"],
-        sinku: "8",
         id: v4(),
       },
     ],
@@ -1350,21 +1140,18 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "手技料",
         kbn: "L",
         kbn_no: ["000", "008"],
-        sinku: "54",
         id: v4(),
       },
       {
         name: "管理料",
         kbn: "L",
         kbn_no: ["009", "010"],
-        sinku: "54",
         id: v4(),
       },
       {
         name: "神経ブロック料",
         kbn: "L",
         kbn_no: ["100", "105"],
-        sinku: "54",
         id: v4(),
       },
       // {name: '薬剤料', kbn: 'L', kbn_no: ['200', '200'], sinku: '54'},
@@ -1380,21 +1167,19 @@ export const ENTITY_PROCEDURE_KBN = [
         name: "標本作成料",
         kbn: "N",
         kbn_no: ["000", "005"],
-        sinku: "64",
         id: v4(),
       },
       {
         name: "診断・判断料",
         kbn: "N",
         kbn_no: ["006", "007"],
-        sinku: "64",
         id: v4(),
       },
     ],
   },
 ];
 
-export const COMMENT_KBN = {
+const COMMENT_KBN = {
   default: [
     { label: "81系", code: "81", id: v4() },
     { label: "82系", code: "82", id: v4() },
@@ -1413,7 +1198,7 @@ export const COMMENT_KBN = {
 };
 
 // 用法検索メニュー
-export const ADMIN_IN_MEDICINE_MENU = {
+const ADMIN_IN_MEDICINE_MENU = {
   name: "用法",
   menuTitle: "用法（内服）",
   categories: [
@@ -1432,7 +1217,7 @@ export const ADMIN_IN_MEDICINE_MENU = {
   ],
 };
 
-export const ADMIN_EXT_MEDICINE_MENU = {
+const ADMIN_EXT_MEDICINE_MENU = {
   name: "用法",
   menuTitle: "用法（外用）",
   categories: [
@@ -1461,211 +1246,509 @@ export const ADMIN_EXT_MEDICINE_MENU = {
   ],
 };
 
-// 症状詳記
-// const SYMPTOMS_DETAIL = [
-//     {code: '01', label: '主たる疾患の臨床症状'},
-//     {code: '02', label: '主たる疾患の診療・検査所見'},
-//     {code: '03', label: '主な治療行為の必要性'},
-//     {code: '04', label: '主な治療行為の経過'},
-//     {code: '50', label: '治験概要'},
-//     {code: '90', label: '上記以外'},
-//     {code: '99', label: 'レセプト摘要欄コメント'},
-//     {code: 'AA', label: '労災レセプト「傷病の経過」'},
-//     {code: 'BB', label: '自賠責（第三者行為）レセプト摘要欄コメント'}
-// ];
+class ClaimModel {
+  constructor() { }
 
-// entity に対応する PROCEDURE_KBN
-// StampEditor に必要な情報
-export const procedureKbnFromEntity = (entity) => {
-  return entity !== "disease"
-    ? ENTITY_PROCEDURE_KBN.find((x) => x.entity === entity)
-    : null;
-};
+  isProcedure(item) {
+    return item && item.code.startsWith("1") && item.code.length === 9;
+  }
 
-// 内用・外用・注射 薬の区分
-export const doseType = (flag) => {
-  switch (flag) {
-    case DOSE_TYPE_INTERNAL:
-      return "内用";
-    case DOSE_TYPE_OTHER:
-      return "その他";
-    case DOSE_TYPE_INJECTION:
-      return "注射";
-    case DOSE_TYPE_TOPICAL:
-      return "外用";
-    case DOSE_TYPE_DENTAL:
-      return "歯科";
-    case "9":
-      return "";
-    default:
-      return "";
+  isMedicine(item) {
+    return item && item.code.startsWith("6") && item.code.length === 9;
   }
-};
 
-// マスターコード -> ClaimItem の タイプ マッピング
-export const itemTypeFrom = (item) => {
-  if (isProcedure(item)) {
-    return CLAIM_PROCEDURE;
+  isMaterial(item) {
+    return item && item.code.startsWith("7") && item.code.length === 9;
   }
-  if (isMedicine(item)) {
-    return CLAIM_MEDICINE;
-  }
-  if (isMaterial(item)) {
-    return CLAIM_MATERIAL;
-  }
-  if (isInstruction(item)) {
-    return CLAIM_INSTRUCTION;
-  }
-  if (isBodyPart(item)) {
-    return CLAIM_BODY_PART;
-  }
-  if (isComment(item)) {
-    return CLAIM_COMMENT;
-  }
-};
 
-// Bundle のソート
-export const sortBundles = (list) => {
-  // Sort set by group
-  list.sort((a, b) => {
-    if (a.group < b.group) return -1;
-    if (a.group > b.group) return 1;
-    return 0;
-  });
-};
-
-// ClaimItem のソート
-export const sortClaimItems = (list) => {
-  // Sort set by type, code
-  list.sort((a, b) => {
-    if (a.type < b.type) return -1;
-    if (a.type > b.type) return 1;
-    // if (a.code < b.code) return -1;
-    // if (a.code > b.code) return 1;
-    return 0;
-  });
-};
-
-// スタンプのソート
-export const sortStamps = (list) => {
-  list.sort((a, b) => {
-    // if (a.group < b.group) return -1;       // asc group
-    // if (a.group > b.group) return 1;        // asc group
-    if (a.freq < b.freq) return 1; // freq dsc
-    if (a.freq > b.freq) return -1; // freq dsc
-    return 0;
-  });
-};
-
-export const isBaseCharge = (bundle) => {
-  return bundle && bundle.entity === "baseCharge";
-};
-
-export const isRp = (bundle) => {
-  return bundle && bundle.entity === "rp";
-};
-
-export const isInjection = (bundle) => {
-  return bundle && bundle.entity === "injection";
-};
-
-export const isImage = (bundle) => {
-  return bundle && bundle.entity === "image";
-};
-
-export const displayBundleTitle = (bundle) => {
-  // Return bundle's name
-  if (!bundle) {
-    return null;
+  isInstruction(item) {
+    // 2A50160000000000
+    return (
+      item &&
+      (item.code.startsWith("1") || item.code.startsWith("2")) &&
+      item.code.length === 16
+    );
   }
-  return isRp(bundle) ? displayRpType(bundle) : bundle.name;
-};
 
-export const displayRpType = (bundle) => {
-  // Return prescription bundle title
-  if (!isRp(bundle)) {
-    return;
+  sAdministration(item) {
+    return item && item.code.startsWith("1") && item.code.length === 16;
   }
-  const arr = [bundle.name];
-  if (bundle.issuedTo === "external") {
-    arr.push("院外処方");
-  }
-  if (bundle.issuedTo === "internal") {
-    arr.push("院内処方");
-  }
-  if (bundle.prn) {
-    arr.push("頓用");
-  }
-  if (bundle.temporary) {
-    arr.push("臨時");
-  }
-  return arr.length > 1 ? arr.join(" ") : arr.join("");
-};
 
-// ClaimItemsと用法に分け、それぞれの配列を返す
-export const bundleItemsFrom = (bundle) => {
-  // Split a bundle into claimItems and instructions
-  if (!bundle || !bundle.claimItems || bundle.claimItems.length === 0) {
-    return [[], []];
+  isComment(item) {
+    return item && item.code.startsWith("8") && item.code.length === 9;
   }
-  const items = [];
-  const instructions = [];
-  bundle.claimItems.forEach((ci) => {
-    // claimItem.type
-    if (ci.type === CLAIM_INSTRUCTION) {
-      instructions.push(ci);
-    } else {
-      items.push(ci);
+
+  isEditableComment(item) {
+    return this.isComment(item) && !item.code.startsWith("82");
+  }
+
+  isBodyPart(item) {
+    return item && item.code.startsWith("002");
+  }
+
+  isBaseProcedure(item) {
+    return item && item[c68_告示等識別区分] === 基本項目;
+  }
+
+  isCompositionProcedure(item) {
+    return item && item[c68_告示等識別区分] === 合成項目;
+  }
+
+  isApplicationProcedure(item) {
+    return item && item[c68_告示等識別区分] === 準用項目;
+  }
+
+  is135Procedure(item) {
+    return (
+      this.isBaseProcedure(item) ||
+      this.isCompositionProcedure(item) ||
+      this.isApplicationProcedure(item)
+    );
+  }
+
+  isAnnotaionProcedure(item) {
+    return item && item[c68_告示等識別区分] === 注加算;
+  }
+
+  isGeneralProcedure(item) {
+    return item && item[c68_告示等識別区分] === 通則加算;
+  }
+
+  hasSameAnnotaionCode(item1, item2) {
+    if (item1[c38_注加算コード] === "0" || item2[c38_注加算コード] === "0") {
+      return false;
     }
-  });
-  return [items, instructions];
-};
+    return item1[c38_注加算コード] === item2[c38_注加算コード];
+  }
 
-// 同じコードのClaimItemがあるか?
-// testは対象のバンドル
-// p は karteの p[]
-export const findSameItem = (test, p) => {
-  const found = [];
-  const group = p.filter((x) => x.group === test.group);
-  test.claimItems.forEach((item) => {
-    group.forEach((bundle) => {
-      // 手技、医薬品、器材 が対象
-      const arr = bundle.claimItems.filter(
-        (x) => x.type < 4 && x.code === item.code,
-      );
-      // const arr = bundle.claimItems.filter(
-      //   (x) => !x.drop && x.code === item.code,
-      // ); // 0:false  用法、コメント=1
-      if (arr.length > 0) {
-        arr.forEach((ci) => {
-          found.push(ci.name);
-        });
+  hasNotSameAnnotaionSerial(item1, item2) {
+    return item1[c39_注加算通番] !== item2[c39_注加算通番];
+  }
+
+  isExclusiveAddition(item) {
+    // 注と通則加算
+    return (
+      (item[c68_告示等識別区分] === 注加算 ||
+        item[c68_告示等識別区分] === 通則加算) &&
+      item[c38_注加算コード] === "0"
+    );
+  }
+
+  procedureTypeName(item) {
+    if (this.isBaseProcedure(item)) {
+      return "基本項目";
+    }
+    if (this.isCompositionProcedure(item)) {
+      return "合成項目";
+    }
+    if (this.isApplicationProcedure(item)) {
+      return "準用項目";
+    }
+    if (this.isAnnotaionProcedure(item)) {
+      return "注加算";
+    }
+    if (this.isGeneralProcedure(item)) {
+      return "通則加算";
+    }
+    return "";
+  }
+
+  isOral(doseType) {
+    return doseType === DOSE_TYPE_INTERNAL;
+  }
+
+  isInjectionMed(doseType) {
+    return doseType === DOSE_TYPE_INJECTION;
+  }
+
+  isTopical(doseType) {
+    return doseType === DOSE_TYPE_TOPICAL;
+  }
+
+  clinicFilter(procedureKbn, item, clinicOnly = true) {
+    if (this.isProcedure(item)) {
+      return clinicOnly
+        ? item.tensuKbn === procedureKbn.kbn &&
+        item.hospClinicFlg !== "1" &&
+        item.inOutFlg !== "1"
+        : item.tensuKbn === procedureKbn.kbn;
+    }
+    return item;
+  }
+
+  isClaimGroup(group) {
+    return group >= "100" && group <= "999";
+  }
+
+  procedureKbnFromEntity(entity) {
+    return entity !== "disease"
+      ? ENTITY_PROCEDURE_KBN.find((x) => x.entity === entity)
+      : null;
+  }
+
+  // 内用・外用・注射 薬の区分
+  doseType(flag) {
+    switch (flag) {
+      case DOSE_TYPE_INTERNAL:
+        return "内用";
+      case DOSE_TYPE_OTHER:
+        return "その他";
+      case DOSE_TYPE_INJECTION:
+        return "注射";
+      case DOSE_TYPE_TOPICAL:
+        return "外用";
+      case DOSE_TYPE_DENTAL:
+        return "歯科";
+      case "9":
+        return "";
+      default:
+        return "";
+    }
+  }
+
+  // マスターコード -> ClaimItem の タイプ マッピング
+  itemTypeFrom(item) {
+    if (this.isProcedure(item)) {
+      return CLAIM_PROCEDURE;
+    }
+    if (this.isMedicine(item)) {
+      return CLAIM_MEDICINE;
+    }
+    if (this.isMaterial(item)) {
+      return CLAIM_MATERIAL;
+    }
+    if (this.isInstruction(item)) {
+      return CLAIM_INSTRUCTION;
+    }
+    if (this.isBodyPart(item)) {
+      return CLAIM_BODY_PART;
+    }
+    if (this.isComment(item)) {
+      return CLAIM_COMMENT;
+    }
+  }
+
+  // Bundle のソート
+  sortBundles(list) {
+    // Sort set by group
+    list.sort((a, b) => {
+      if (a.group < b.group) return -1;
+      if (a.group > b.group) return 1;
+      return 0;
+    });
+  }
+
+  // ClaimItem のソート
+  sortClaimItems(list) {
+    // Sort set by type, code
+    list.sort((a, b) => {
+      if (a.type < b.type) return -1;
+      if (a.type > b.type) return 1;
+      // if (a.code < b.code) return -1;
+      // if (a.code > b.code) return 1;
+      return 0;
+    });
+  }
+
+  // スタンプのソート
+  sortStamps(list) {
+    list.sort((a, b) => {
+      // if (a.group < b.group) return -1;       // asc group
+      // if (a.group > b.group) return 1;        // asc group
+      if (a.freq < b.freq) return 1; // freq dsc
+      if (a.freq > b.freq) return -1; // freq dsc
+      return 0;
+    });
+  }
+
+  isBaseCharge(bundle) {
+    return bundle && bundle.entity === "baseCharge";
+  }
+
+  isRp(bundle) {
+    return bundle && bundle.entity === "rp";
+  }
+
+  isInjection(bundle) {
+    return bundle && bundle.entity === "injection";
+  }
+
+  isImage(bundle) {
+    return bundle && bundle.entity === "image";
+  }
+
+  displayBundleTitle(bundle) {
+    // Return bundle's name
+    if (!bundle) {
+      return null;
+    }
+    return this.createisRp(bundle) ? this.displayRpType(bundle) : bundle.name;
+  }
+
+  displayRpType(bundle) {
+    // Return prescription bundle title
+    if (!this.isRp(bundle)) {
+      return;
+    }
+    const arr = [bundle.name];
+    if (bundle.issuedTo === "external") {
+      arr.push("院外処方");
+    }
+    if (bundle.issuedTo === "internal") {
+      arr.push("院内処方");
+    }
+    if (bundle.prn) {
+      arr.push("頓用");
+    }
+    if (bundle.temporary) {
+      arr.push("臨時");
+    }
+    return arr.length > 1 ? arr.join(" ") : arr.join("");
+  }
+
+  // ClaimItemsと用法に分け、それぞれの配列を返す
+  bundleItemsFrom(bundle) {
+    // Split a bundle into claimItems and instructions
+    if (!bundle || !bundle.claimItems || bundle.claimItems.length === 0) {
+      return [[], []];
+    }
+    const items = [];
+    const instructions = [];
+    bundle.claimItems.forEach((ci) => {
+      // claimItem.type
+      if (ci.type === CLAIM_INSTRUCTION) {
+        instructions.push(ci);
+      } else {
+        items.push(ci);
       }
     });
-  });
-  return found;
-};
+    return [items, instructions];
+  }
 
-const regexp = new RegExp(/^[-+]?[0-9]+(\.[0-9]+)?$/);
-
-// (整数 | 少数) & !==0
-export const isNumber = (value) => {
-  return regexp.test(value);
-};
-
-// (整数 | 少数) & !==0
-export const isQuantity = (value) => {
-  return regexp.test(value) && Number(value) !== 0;
-};
-
-export const hasValidQuantity = (bundle) => {
-  const itemOk = bundle.claimItems
-    .filter((x) => x.unit)
-    .every((item) => {
-      const { quantity } = item;
-      return isQuantity(quantity);
+  // 同じコードのClaimItemがあるか?
+  // testは対象のバンドル
+  // p は karteの p[]
+  findSameItem(test, p) {
+    const found = [];
+    const group = p.filter((x) => x.group === test.group);
+    test.claimItems.forEach((item) => {
+      group.forEach((bundle) => {
+        // 手技、医薬品、器材 が対象
+        const arr = bundle.claimItems.filter(
+          (x) => x.type < 4 && x.code === item.code,
+        );
+        if (arr.length > 0) {
+          arr.forEach((ci) => {
+            found.push(ci.name);
+          });
+        }
+      });
     });
-  const { unit, quantity } = bundle;
-  const bundleOk = unit ? isQuantity(quantity) : true;
-  return itemOk && bundleOk;
-};
+    return found;
+  }
+
+  // (整数 | 少数) & !==0
+  isNumber(value) {
+    return regexp.test(value);
+  }
+
+  // (整数 | 少数) & !==0
+  isQuantity(value) {
+    return regexp.test(value) && Number(value) !== 0;
+  }
+
+  hasValidQuantity(bundle) {
+    const itemOk = bundle.claimItems
+      .filter((x) => x.unit)
+      .every((item) => {
+        const { quantity } = item;
+        return this.isQuantity(quantity);
+      });
+    const { unit, quantity } = bundle;
+    const bundleOk = unit ? this.isQuantity(quantity) : true;
+    return itemOk && bundleOk;
+  }
+
+  createEmptyDiagnosis() {
+    return {};
+  }
+
+  createBundle(params) {
+    if (!params.length) {
+      return null;
+    }
+    // Entity に対応する Bundle Template
+    const [entity] = params;
+    const template = ENTITY_BUNDLE[entity];
+    const bundle = JSON.parse(JSON.stringify(template));
+    bundle.id = v4();
+    if (params.length === 1) {
+      if (DEBUG) {
+        console.log(JSON.stringify(bundle, null, 3));
+      }
+      return bundle;
+    }
+    // Item がある場合 claimItems.push()
+    const claimItem = params[1];
+    bundle.claimItems.push(claimItem);
+    if (DEBUG) {
+      console.log(JSON.stringify(bundle, null, 3));
+    }
+    return bundle;
+  }
+
+  // inputItem = inputToEdit = InputCatalogue
+  createInputBundle(inputItem) {
+    const { entity, category, group, name, mandatory } = inputItem;
+    const bundle = {
+      id: v4(), // ID
+      entity, // Entity
+      category, // Category
+      group, // Group
+      name, // 名称
+      quantity: "1", // 数量
+      unit: "", // 単位
+      mandatory, // 必須項目
+      // items,                      // 項目名列挙
+      claimItems: [], // 項目
+    };
+    if (DEBUG) {
+      console.log(JSON.stringify(bundle, null, 3));
+    }
+    return bundle;
+  }
+
+  // 病名 Item
+  createDiagnosisItem(master) {
+    const { code, name, icd_10_1_2013, icd_10_2_2013, singleUse } = master;
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_DIAGNOSIS));
+    const myItem = {
+      id: v4(),
+      code: code,
+      name: name,
+      icd1012: icd_10_1_2013,
+      icd1022: icd_10_2_2013,
+      diagnosisCategory: null,
+      dateOfOnset: dateFormat(new Date(), ISO_DATE_TIME),
+      outcome: "",
+      dateOfRemission: null,
+      modifier: singleUse,
+    };
+    const ret = { ...base, ...myItem };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+
+  // Select Master item  -> Claim Item を生成する
+  createClaimItem(master) {
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_CLAIM));
+    const itemType = this.itemTypeFrom(master);
+    const drop =
+      itemType === CLAIM_INSTRUCTION || itemType === CLAIM_COMMENT ? 1 : 0;
+    let masterAttr;
+    if (itemType === CLAIM_PROCEDURE) {
+      masterAttr = MASTER_ATTR_PROCEDURE;
+    } else if (itemType === CLAIM_MEDICINE) {
+      masterAttr = MASTER_ATTR_MEDICINE;
+    } else if (itemType === CLAIM_MATERIAL) {
+      masterAttr = MASTER_ATTR_MATERIAL;
+    } else if (itemType === CLAIM_COMMENT) {
+      masterAttr = MASTER_ATTR_COMMENT;
+    } else if (itemType === CLAIM_INSTRUCTION) {
+      masterAttr = MASTER_ATTR_INSTRUCTION;
+    }
+    const item = masterAttr.reduce((acc, key) => {
+      acc[key] = master[key] || "";
+      return acc;
+    }, {});
+    item["id"] = v4();
+    item["category"] = item["tensuKbn"] || "";
+    if (item["claimClass"]) {
+      if (item["claimClass"].startsWith("11")) {
+        item["group"] = "110";
+      } else if (item["claimClass"].startsWith("12")) {
+        item["group"] = "120";
+      } else {
+        item["group"] = item["claimClass"];
+      }
+    }
+    item["type"] = itemType;
+    item["name"] = halfFrom(item["name"]);
+    item["quantity"] = base.quantity;
+    if (item["unitCode"] && item["unitCode"] !== "0") {
+      item["unit"] = halfFrom(item["unit"]);
+    } else {
+      item["unitCode"] = "";
+    }
+    item["drop"] = drop;
+    item["doseType"] = item?.["doseType"] ?? "0";
+    const ret = { ...base, ...item };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+
+  // カメラ Item
+  createCameraItem(cameraData) {
+    // cameraData = {filename, contentType, size, lastModified, thumbnail, body, makeModel}
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_CAMERA));
+    base.id = v4();
+    const ret = { ...base, ...cameraData };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+
+  // シェーマ Item
+  createSchemaItem(schemaData) {
+    // schemaData = {filename, contentType, size, lastModified, thumbnail, body}
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_SCHEMA));
+    base.id = v4();
+    const ret = { ...base, ...schemaData };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+
+  // 画像ファイル Item
+  createImageItem(imageData) {
+    // imageData = {filename, contentType, size, lastModified, thumbnail, body}
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_IMAGE));
+    base.id = v4();
+    const ret = { ...base, ...imageData };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+
+  // PDF Item
+  createPDFItem(pdfData) {
+    // pdfData = {filename, contentType, size, lastModified, body}
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_PDF));
+    base.id = v4();
+    const ret = { ...base, ...pdfData };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+
+  // Input Item から ClaimItem
+  createInputItem(input) {
+    const base = JSON.parse(JSON.stringify(CLAIM_ITEM_INPUT));
+    base.id = v4();
+    const ret = { ...base, ...input };
+    if (DEBUG) {
+      console.log(JSON.stringify(ret, null, 3));
+    }
+    return ret;
+  }
+}
+
+export default ClaimModel;

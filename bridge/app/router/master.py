@@ -133,11 +133,11 @@ async def list_short_name(request):
     result = await db_master.list_short_name(pool)
     return JSONResponse(result)
 
-async def list_notification(request):
+async def find_notification(request):
     pool = get_pool(request.app)
-    result = await db_master.list_notification(pool)
+    entity = request.query_params["entity"]
+    result = await db_master.find_notification(pool, entity)
     return JSONResponse(result)
-
 
 async def get_prefecture_code(request):
     pool = get_pool(request.app)
