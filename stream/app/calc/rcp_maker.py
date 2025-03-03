@@ -72,6 +72,7 @@ class RcpMaker(Receipt):
         b['rcp_examined_at'] = created[0:8] # 算定日 実日数算定用  YYYYMMDD
         b['rcp_day_at'] = created[6:8] # 算定日
         b['rcp_claim_month'] = created[0:6] # 請求月  YYYYMM
+        b['injected'] = normalized.get('injected', False)  # 自動注入フラグ
         #------------------------------------------------------------
         return b
     

@@ -138,7 +138,7 @@ class Container(SBase):
             if p.get("under_limit", True) or p.get("is_main_item", True)
         ]:
             bundle = self.bundle_from_injected_item(a)  # claim class code
-            bundle["injected"] = True
+            # bundle["injected"] = True  set at avobe method
             bundle["claim_items"].append(a)
             self.context.get_karte().get("p").append(bundle)
         get_logger(__name__).debug(

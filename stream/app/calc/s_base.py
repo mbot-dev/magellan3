@@ -59,8 +59,8 @@ class SBase(S):
         group = item.get('claim_class')
         receipt_group = f'{group[0:2]}0'  # 11 -> 110, 12 -> 120  claim_class->receipt_group
         entity = item.get('entity', '')
-        keys = ['group', 'entity', 'quantity', 'unit', 'issued_to', 'oral', 'prn', 'topical', 'temporary', 'freq_per_day', 'claim_items']
-        values = [receipt_group, entity, 1, '', '', '', '', '', '', '', []]
+        keys = ['injected', 'group', 'entity', 'quantity', 'unit', 'issued_to', 'oral', 'prn', 'topical', 'temporary', 'freq_per_day', 'claim_items']
+        values = [True, receipt_group, entity, 1, '', '', '', '', '', '', '', []]
         return {key: value for key, value in zip(keys, values)}
     
     def create_claim_bundle(self, obj):  # obj = class
@@ -71,6 +71,7 @@ class SBase(S):
             b[key] = getattr(self.context, f'get_{key}')()  # method invoke
         for key in attrs:
             b[key] = getattr(obj, key)  # variable get
+        b['injected'] = obj.injected if hasattr(obj, 'injected') else False
         b['claim_items'] = []
         return b
     
