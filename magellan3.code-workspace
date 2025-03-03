@@ -44,6 +44,9 @@
 		},
 		{
 			"path": "docs"
+		},
+		{
+			"path": "margaret"
 		}
 	]
 }

@@ -62,14 +62,18 @@ export const stampReducer = produce((draft, action) => {
     }
     case "addItem":
       item = action.item;
-      if (canAdd(draft.myBundle, item)) {
-        draft.myBundle.claimItems.push(item);
-        sortClaimItems(draft.myBundle.claimItems);
-        draft.myBundle.isValid = isValidBundle(draft.myBundle);
-        draft.myBundle.canClear = draft.myBundle.claimItems.length > 0;
+      if (!canAdd(draft.myBundle, item)) {
+        return;
       }
-      if (draft.isRp && draft.myBundle.claimItems.length === 1) {
-        // First item
+      draft.myBundle.claimItems.push(item);
+      sortClaimItems(draft.myBundle.claimItems);
+      draft.myBundle.isValid = isValidBundle(draft.myBundle);
+      draft.myBundle.canClear = draft.myBundle.claimItems.length > 0;
+      if (!isRp(draft.myBundle)) {
+        return;
+      }
+      if (draft.myBundle.claimItems.length === 1) {
+        // First item with rp
         if (
           draft.myBundle.oral ||
           draft.myBundle.prn ||
@@ -77,13 +81,14 @@ export const stampReducer = produce((draft, action) => {
         ) {
           return;
         }
+        // Not yet set oral, prn, topical type
         const test = draft.myBundle.claimItems[0];
         if (test.doseType === DOSE_TYPE_TOPICAL) {
           draft.myBundle.topical = true;
-          draft.myBundle.whichDose = false;
+          draft.myBundle.askDose = false;
           return;
         }
-        draft.myBundle.whichDose = true;
+        draft.myBundle.askDose = true;
       }
       break;
     case "removeItem":
@@ -149,7 +154,7 @@ export const stampReducer = produce((draft, action) => {
         draft.myBundle.prn = false;
         draft.myBundle.topical = false;
         draft.myBundle.unit = "日分";
-        draft.myBundle.whichDose = false;
+        draft.myBundle.askDose = false;
       }
       break;
     case "setPRN":
@@ -161,7 +166,7 @@ export const stampReducer = produce((draft, action) => {
         draft.myBundle.topical = false;
         draft.myBundle.temporary = false;
         draft.myBundle.unit = "回分";
-        draft.myBundle.whichDose = false;
+        draft.myBundle.askDose = false;
       }
       break;
     case "setTopical":
@@ -174,7 +179,7 @@ export const stampReducer = produce((draft, action) => {
         draft.myBundle.temporary = false;
         draft.myBundle.quantity = "1"; // 1
         draft.myBundle.unit = "";
-        draft.myBundle.whichDose = false;
+        draft.myBundle.askDose = false;
       }
       break;
     case "setTemporal":
@@ -204,7 +209,7 @@ export const stampReducer = produce((draft, action) => {
       draft.myBundle.temporary = false;
       draft.myBundle.quantity = "";
       draft.myBundle.unit = "";
-      draft.myBundle.whichDose = false;
+      draft.myBundle.askDose = false;
       draft.myBundle.isValid = false;
       draft.myBundle.canClear = false;
       break;
@@ -307,7 +312,10 @@ const canAdd = (bundle, item) => {
     const medicines = bundle.claimItems.filter(
       (x) => x.type === CLAIM_MEDICINE,
     );
-    if (medicines && medicines.length > 0) {
+    if (medicines.length === 0) {
+      return true;
+    }
+    if (medicines.length > 0) {
       // 剤型が全て同じならOK
       return medicines.every((test) => {
         return test.doseType === item.doseType;

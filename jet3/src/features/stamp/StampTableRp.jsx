@@ -40,7 +40,7 @@ const TEXT_TOPICAL = "外用";
 
 // Return boolean value to controle the display of the buttons
 const useRp = (bundle) => {
-  const [whichDose, setWhichDose] = useState(false);
+  const [askDose, setaskDose] = useState(false);
   const [inMedicine, setInMedicine] = useState(false);
   const [outMedicine, setOutMedicine] = useState(false);
   const [oral, setOral] = useState(false);
@@ -54,7 +54,7 @@ const useRp = (bundle) => {
     if (!bundle) {
       return;
     }
-    setWhichDose(bundle?.whichDose ?? false);
+    setaskDose(bundle?.askDose ?? false);
     setOral(bundle?.oral ?? false);
     setPrn(bundle?.prn ?? false);
     setTopical(bundle?.topical ?? false);
@@ -66,7 +66,7 @@ const useRp = (bundle) => {
   }, [bundle]);
 
   const ret = [
-    whichDose,
+    askDose,
     inMedicine,
     outMedicine,
     oral,
@@ -83,7 +83,7 @@ const useRp = (bundle) => {
 const StampTableRp = ({ origin = "tool", maxHeight }) => {
   const [{ myBundle }, localDispatch] = useStampState();
   const [
-    whichDose,
+    askDose,
     inMedicine,
     outMedicine,
     oral,
@@ -481,7 +481,7 @@ const StampTableRp = ({ origin = "tool", maxHeight }) => {
               </StickyBody>
             </table>
           </InstBar>
-          {whichDose && (
+          {askDose && (
             <DoseSelector>
               <FieldSet>
                 <Legend>{`${TEXT_ORAL}か${TEXT_PRN}かを選択してください`}</Legend>
@@ -532,13 +532,6 @@ const OptionsBar = styled(FieldSet)`
   align-items: center;
   gap: 16px;
   padding-left: 16px;
-`;
-
-// Scrollable container fo table
-const ScrolContainer = styled(FieldSet)`
-  height: 100%;
-  max-height: calc(var(--max-height));
-  overflow-y: auto;
 `;
 
 const InstBar = styled(FieldSet)``;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import pluginContainer from "./PluginContainer";
-import MyPlugin from "./MyPlugin.jsx";
-import PluginPoint from "./PluginPoint.jsx";
+import pluginContainer from "./plugins/PluginContainer";
+import MyPlugin from "./plugins/MyPlugin.jsx";
+import PluginPoint from "./plugins/PluginPoint.jsx";
 
 const App = () => {
 	const [ready, setReady] = useState(false);

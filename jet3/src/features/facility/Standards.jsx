@@ -21,6 +21,7 @@ import { ENTITY_STANDARD_KBN } from "../../models/claim";
 
 const initilaState = {
 	state: "view",
+	askToEdit: false,
 	facilityNotifications: [],
 	notifications: [],
 	selectedNotification: null,
@@ -55,6 +56,7 @@ const reducer = (state, action) => {
 				break;
 			case "add":
 				if (draft.state === "view") {
+					draft.askToEdit = true;
 					return;
 				}
 				if (!draft.facilityNotifications.includes(action.payload.item.code)) {
@@ -355,7 +357,7 @@ const Top = styled.div`
 
 const Bottom = styled.div`
 	width: 100%;
-	max-height: calc(100vh - 256px - 44px);
+	max-height: calc(100vh - 256px - 44px - 32px);
 	overflow-y: auto;
 `;
 
