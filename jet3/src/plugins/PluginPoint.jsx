@@ -1,4 +1,3 @@
-import React from "react";
 import pluginContainer from "./PluginContainer";
 
 const PluginPoint = () => {

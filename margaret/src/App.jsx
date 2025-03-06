@@ -1,27 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import pluginContainer from "./plugins/PluginContainer";
-import MyPlugin from "./plugins/MyPlugin.jsx";
-import PluginPoint from "./plugins/PluginPoint.jsx";
+import PluginPoint from "./plugins/PluginPoint";
+import {usePlugin} from "./plugins/PluginContext";
 
 const App = () => {
-	const [ready, setReady] = useState(false);
+	const [{execute}, dispatch] = usePlugin();
 
 	useEffect(() => {
 		const loadPlugins = async () => {
-			const pluginInstance = new MyPlugin();
-			pluginContainer.register(pluginInstance);
-			pluginContainer.loadPlugins();
-			setReady(true);
-		};
+      const className = "MyPlugin";
+      const PluginClass = window[className];
+      if (PluginClass) {
+        const pluginInstance = new PluginClass();
+        pluginContainer.register(pluginInstance);
+        pluginContainer.loadPlugins();
+        dispatch({ type: "start" });
+      } else {
+        console.error(`Class ${className} not found`);
+      }
+    };
 		loadPlugins();
 	}, []);
 
 	return (
-		<>
+		<div>
 			<h2>Plugin Test</h2>
-			{/* {ready && pluginContainer.renderPlugins()} */}
-			{ready && <PluginPoint />} {/* Corrected render */}
-		</>
+			{execute && <PluginPoint name="MyPlugin"/>}
+		</div>
 	);
 };
 
