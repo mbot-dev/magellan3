@@ -44,4 +44,6 @@ class MyPlugin extends PluginInterface {
 	}
 }
 
+window.MyPlugin = MyPlugin;
+
 export default MyPlugin;

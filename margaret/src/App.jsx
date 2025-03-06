@@ -12,7 +12,7 @@ const App = () => {
 	const [{ execute }, dispatch] = usePlugin();
 
 	useEffect(() => {
-		window.MyPlugin = MyPlugin;
+		// ßwindow.MyPlugin = MyPlugin;
 		const loadPlugins = async () => {
 			const className = "MyPlugin";
 			const PluginClass = getClass(className);
