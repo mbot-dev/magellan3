@@ -1,11 +1,14 @@
-import {createContext, useReducer, useContext} from 'react';
+import {createContext, useReducer} from 'react';
 
 const PluginContext = createContext(null);
 
-export const PluginProvider = ({reducer, initialState, children}) =>(
+const PluginProvider = ({reducer, initialState, children}) =>(
   <PluginContext value={useReducer(reducer, initialState)}>
     {children}
   </PluginContext>
 );
 
-export const usePlugin = () => useContext(PluginContext);
+export {
+  PluginContext,
+  PluginProvider
+};

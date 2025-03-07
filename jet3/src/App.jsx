@@ -7,6 +7,7 @@ import { useStateValue } from "./reducers/state";
 import Lobby from "./features/lobby/Lobby";
 import { AppIcon, getIcon } from "./AppIcon";
 import { APP_MENU_SPEC } from "./appSpec";
+import { PluginProvider } from "./plugins/PluginContext";
 
 const BottomBar = () => {
   const { productName, version, user, loginDate } = useStateValue()[0];
@@ -72,19 +73,21 @@ const App = () => {
   return (
     <ThemeProvider theme={settings.appTheme}>
       <MargaretProvider>
-        <GlobalStyle />
-        <Layout>
-          <Header />
-          <Side>
-            <SideBar />
-          </Side>
-          <Main>
-            <Lobby />
-          </Main>
-          <Footer>
-            <BottomBar />
-          </Footer>
-        </Layout>
+        <PluginProvider>
+          <GlobalStyle />
+          <Layout>
+            <Header />
+            <Side>
+              <SideBar />
+            </Side>
+            <Main>
+              <Lobby />
+            </Main>
+            <Footer>
+              <BottomBar />
+            </Footer>
+          </Layout>
+        </PluginProvider>
       </MargaretProvider>
     </ThemeProvider>
   );

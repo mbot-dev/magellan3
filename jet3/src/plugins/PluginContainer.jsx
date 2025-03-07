@@ -15,9 +15,10 @@ class PluginContainer {
   }
 
   renderPlugins(name) {
-    if (name) {
+    if (this.plugins[name]) {
       return this.plugins[name].render();
     }
+    return null;
   }
 }
 

@@ -22,6 +22,8 @@ import RoomSettings from "../setting/RoomSettings";
 import StampMaker from "../stamp/StampMaker";
 import RoomKarte from "../karte/RoomKarte";
 import RoomReceipt from "../receipt/RoomReceipt";
+import FacilityStandards from "../../plugins/FacilityStandards";
+import pluginContainer from "../../plugins/PluginContainer";
 
 const PVT_EVENT = "magellan:pvt-update";
 
@@ -159,6 +161,16 @@ const Lobby = () => {
         return;
       }
     });
+    // Is here best place to register plugins?
+    const arr = [];
+    arr.push({ plugPoint: FacilityStandards });
+    arr.forEach((plugin) => {
+      const PluginClass = plugin.plugPoint;
+      const pluginInstance = new PluginClass();
+      pluginContainer.register(pluginInstance);
+    });
+    pluginContainer.loadPlugins();
+    //---------------------------------------------
 
     return () => {
       margaret.getApi("pusher").unsubscribe(pvtChannel);

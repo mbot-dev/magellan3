@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import PluginInterface from "./PluginInterface";
-import { usePlugin } from "./PluginContext";
+import { PluginContext } from "./PluginContext";
 
 const sleep = (ms) => {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 const MyUI = () => {
-	const [{ execute }, dispatch] = usePlugin();
-
+	const [{ execute }, dispatch] = useContext(PluginContext) // usePlugin();
+       
 	useEffect(() => {
 		if (!execute) {
 			return;
@@ -43,7 +43,5 @@ class MyPlugin extends PluginInterface {
 		return <MyUI />;
 	}
 }
-
-window.MyPlugin = MyPlugin;
 
 export default MyPlugin;

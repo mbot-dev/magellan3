@@ -1,39 +1,35 @@
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
 import pluginContainer from "./plugins/PluginContainer";
 import PluginPoint from "./plugins/PluginPoint";
-import { usePlugin } from "./plugins/PluginContext";
+// import { usePlugin } from "./plugins/PluginContext";
 import MyPlugin from "./plugins/MyPlugin";
-
-function getClass(classname) {
-	return window[classname];
-}
+import { PluginContext } from "./plugins/PluginContext";
 
 const App = () => {
-	const [{ execute }, dispatch] = usePlugin();
+  const [{ execute }, dispatch] = useContext(PluginContext);   // usePlugin();
 
-	useEffect(() => {
-		// ßwindow.MyPlugin = MyPlugin;
-		const loadPlugins = async () => {
-			const className = "MyPlugin";
-			const PluginClass = getClass(className);
-			if (PluginClass) {
-				const pluginInstance = new PluginClass();
-				pluginContainer.register(pluginInstance);
-				pluginContainer.loadPlugins();
-				dispatch({ type: "start" });
-			} else {
-				console.error(`Class ${className} not found`);
-			}
-		};
-		loadPlugins();
-	}, []);
+  useEffect(() => {
+    const loadPlugins = (pluginList) => {
+      pluginList.forEach((plugin) => {
+        const PluginClass = plugin.plugPoint;
+        const pluginInstance = new PluginClass();
+        pluginContainer.register(pluginInstance);
+      });
+      pluginContainer.loadPlugins();
+      dispatch({ type: "start" });
+    };
+		// このリストを動的に生成する必要がある
+    const arr = [];
+    arr.push({ plugPoint: MyPlugin });
+    loadPlugins(arr);
+  }, []);
 
-	return (
-		<div>
-			<h2>Plugin Test</h2>
-			{execute && <PluginPoint name="app_message" />}
-		</div>
-	);
+  return (
+    <div>
+      <h2>Plugin Test</h2>
+      {execute && <PluginPoint name="app_message" />}
+    </div>
+  );
 };
 
 export default App;

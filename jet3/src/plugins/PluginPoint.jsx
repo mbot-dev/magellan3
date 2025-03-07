@@ -1,7 +1,7 @@
 import pluginContainer from "./PluginContainer";
 
-const PluginPoint = () => {
-	return <div>{pluginContainer.renderPlugins("MyFirstPlugin")}</div>;
+const PluginPoint = ({name}) => {
+	return <div>{pluginContainer.renderPlugins(name)}</div>;
 };
 
 export default PluginPoint;
