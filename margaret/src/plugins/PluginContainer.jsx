@@ -14,10 +14,11 @@ class PluginContainer {
 		});
 	}
 
-	renderPlugins(point) {
-		if (this.plugins[point]) {
-			return this.plugins[point].render();
+	renderPlugins(name, props) {
+		if (this.plugins[name]) {
+			return this.plugins[name].render(props);
 		}
+		return null;
 	}
 }
 

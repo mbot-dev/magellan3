@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import PluginInterface from "./PluginInterface";
 import { PluginContext } from "./PluginContext";
 
@@ -6,19 +6,17 @@ const sleep = (ms) => {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const MyUI = () => {
-	const [{ execute }, dispatch] = useContext(PluginContext) // usePlugin();
-       
+const MyUI = ({ start, onStop }) => {
 	useEffect(() => {
-		if (!execute) {
+		if (!start) {
 			return;
 		}
 		sleep(3000).then(() => {
-			dispatch({ type: "stop" });
+			onStop();
 		});
-	}, [execute]);
+	}, [start]);
 
-	return execute ? (
+	return start ? (
 		<div style={{ padding: "32px" }}>Plugin is running</div>
 	) : (
 		<div>Plugin is not running</div>
@@ -36,11 +34,11 @@ class MyPlugin extends PluginInterface {
 	}
 
 	init() {
-		console.log("MyFirstPlugin initialized");
+		console.log("App Message Plugin initialized");
 	}
 
-	render() {
-		return <MyUI />;
+	render(props) {
+		return <MyUI {...props} />;
 	}
 }
 
