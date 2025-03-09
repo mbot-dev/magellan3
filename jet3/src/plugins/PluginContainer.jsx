@@ -5,7 +5,7 @@ class PluginContainer {
 		this.plugins = {};
 	}
 
-	loadPlugins() {
+	registerPlugins() {
 		const arr = [];
 		arr.push({ facilityStandards: StandardsAI }); // plugPoint: PluginClass
 		arr.forEach((plugin) => {
@@ -15,7 +15,13 @@ class PluginContainer {
 		});
 	}
 
-	renderPlugins(name, props) {
+	loadPlugins() {
+		Object.keys(this.plugins).forEach((key) => {
+			this.plugins[key].init();
+		});
+	}
+
+	renderPlugin(name, props) {
 		if (this.plugins[name]) {
 			return this.plugins[name].render(props);
 		}
