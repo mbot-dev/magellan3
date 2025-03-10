@@ -13,7 +13,7 @@ const STAGE_WAITING = 2;
 
 const Login = () => {
   const margaret = useMargaret();
-  const [{ copyRight, isOnline, appStatus, loginName, bearerToken }, dispatch] =
+  const [{ isOnline, appStatus, loginName, bearerToken }, dispatch] =
     useStateValue();
   const [stage, setStage] = useState(STAGE_SILENT);
 
@@ -151,7 +151,7 @@ const Login = () => {
         <LoginDialog
           onSendLink={handleSendLink}
           onSignup={handleSignUp}
-          copyRight={copyRight}
+          copyRight={margaret.getCopyRight()}
         />
       )}
       {stage === STAGE_WAITING && (

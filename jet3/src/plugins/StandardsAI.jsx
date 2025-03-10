@@ -46,11 +46,14 @@ const MyUI = ({ start, onStop, onData }) => {
 class StandardsAI extends PluginInterface {
   constructor() {
     super();
-    this.plugPoint = "facilityStandards";
   }
 
-  getPlugPoint() {
-    return this.plugPoint;
+  get name() {
+    return "facilityStandards";;
+  }
+
+  get plugPoint() {
+    return "facilityStandards";;
   }
 
   init() {

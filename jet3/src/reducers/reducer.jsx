@@ -2,13 +2,9 @@ import { produce } from "immer";
 import { findTheme } from "../aux/commonStyles";
 
 const MOSAIC = "mosaic";
-const IS_MAC = navigator.userAgent.indexOf("Mac") >= 0;
 
 export const initialState = {
   //------------------------------------------------------
-  productName: "マーガレット",
-  version: "0.6.2",
-  copyRight: "©2024 Digital Users Inc.",
   settings: {
     theme: "blueGray",
     appTheme: findTheme("blueGray"),
@@ -17,7 +13,6 @@ export const initialState = {
     isMasterColoring: true,
     isAnimate: true,
   },
-  isMac: IS_MAC,
   karteRender: MOSAIC,
   path: "",
   //------------------------------------------------------

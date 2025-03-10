@@ -7,11 +7,11 @@ class PluginContainer {
 
 	registerPlugins() {
 		const arr = [];
-		arr.push({ facilityStandards: StandardsAI }); // plugPoint: PluginClass
+		arr.push(StandardsAI);
 		arr.forEach((plugin) => {
-			Object.keys(plugin).forEach((key) => {
-				this.plugins[key] = new plugin[key]();
-			});
+			const instance = new plugin();
+			const plugPoint = instance.plugPoint;
+			this.plugins[plugPoint] = instance;
 		});
 	}
 
@@ -21,9 +21,9 @@ class PluginContainer {
 		});
 	}
 
-	renderPlugin(name, props) {
-		if (this.plugins[name]) {
-			return this.plugins[name].render(props);
+	renderPlugin(plugPoint, props) {
+		if (this.plugins[plugPoint]) {
+			return this.plugins[plugPoint].render(props);
 		}
 		return null;
 	}

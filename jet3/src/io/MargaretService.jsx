@@ -16,6 +16,9 @@ import UserService from "./UserService";
 
 class MargaretService {
   constructor() {
+    this.version = "0.6.4";
+    this.copyRight = "©2024 Digital Users Inc.",
+    this.productName = "Margarer";
     this.pusherService = new PusherService();
     this.diagnosisService = new DiagnosisService();
     this.documentService = new DocumentService();
@@ -31,6 +34,22 @@ class MargaretService {
     this.riskService = new RiskService();
     this.stampService = new StampService();
     this.userService = new UserService();
+  }
+
+  getVersion() {
+    return this.version;
+  }
+
+  getCopyRight() {
+    return this.copyRight;
+  }
+
+  getProductName() {
+    return this.productName;
+  }
+  
+  isMac() {
+    return navigator.userAgent.indexOf("Mac") >= 0;
   }
 
   getApi(name) {

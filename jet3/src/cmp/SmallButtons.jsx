@@ -1,5 +1,4 @@
-import React from 'react';
-import { useStateValue } from "../reducers/state";
+import { useMargaret } from '../io/MargaretProvider';
 import { CANCEL_TEXT, OK_TEXT } from '../aux/FormUtil';
 
 const SmallButtons = ({
@@ -17,7 +16,7 @@ const SmallButtons = ({
   onOk,
   onSubmit
 }) => {
-  const { isMac } = useStateValue()[0];
+  const margaret = useMargaret();
 
   const handleCancel = () => {
     onCancel();
@@ -157,7 +156,7 @@ const SmallButtons = ({
     );
   };
 
-  return isMac ? (
+  return margaret.isMac() ? (
     renderMac()
   ) : (
     renderWin()

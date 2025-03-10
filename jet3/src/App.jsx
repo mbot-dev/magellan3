@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import styled, { ThemeProvider } from "styled-components";
 import dateFormat from "dateformat";
-import { MargaretProvider } from "./io/MargaretProvider";
+import { MargaretProvider, useMargaret } from "./io/MargaretProvider";
 import { GlobalStyle } from "./assets/globalStyles";
 import { useStateValue } from "./reducers/state";
 import Lobby from "./features/lobby/Lobby";
@@ -9,7 +9,8 @@ import { AppIcon, getIcon } from "./AppIcon";
 import { APP_MENU_SPEC } from "./appSpec";
 
 const BottomBar = () => {
-	const { productName, version, user, loginDate } = useStateValue()[0];
+	const margaret = useMargaret();
+	const { user, loginDate } = useStateValue()[0];
 
 	return (
 		<Footer>
@@ -18,8 +19,8 @@ const BottomBar = () => {
 				style={{ "--pdd": "3px 16px 3px var(--side-bar-width)" }}
 			>
 				<div className="z3-flex" style={{ "--gap": "8px" }}>
-					<span>{productName}</span>
-					<span>{version}</span>
+					<span>{margaret.getProductName()}</span>
+					<span>{margaret.getVersion()}</span>
 					<div className="z3-flex-grow" />
 					<span>
 						{loginDate ? dateFormat(loginDate, "yyyy-m-d HH:MM") : ""}
