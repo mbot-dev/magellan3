@@ -170,7 +170,8 @@ const Lobby = () => {
 		// pluginContainer.loadPlugins();
 		//---------------------------------------------
 		const loadPlugins = async () => {
-			const plugins = await margaret.getApi("plugin").getPlugin("MyPlugin");
+			const plugins = await margaret.getApi("plugin").getPlugin("karte");
+			// console.log(JSON.stringify(plugins, null, 2));
 			console.log(plugins);
 		};
 		loadPlugins();

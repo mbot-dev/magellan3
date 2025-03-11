@@ -1,23 +1,23 @@
 from starlette.responses import JSONResponse
 from starlette.responses import PlainTextResponse
+import simplejson as json
 
 def get_pool(app):
     return app.state.magellan_pool
 
-async def list_plugins(request):
-    lst = list()
-    p = dict()
-    p["name"] = "MyPlugin"
-    p["version"] = "0.1"
-    p["description"] = "This is a test plugin"
-    p["author"] = "Me"
-    p["license"] = "MIT"
-    p["url"] = "/plugin/facility_standards"
-    p["plug_point"] = "facility_standards"
-    lst.append(p)
-    return JSONResponse(lst)
+def list_plugins(request):  
+    p = {
+        "name": "MyPlugin",
+        "version": "0.1",
+        "description": "This is a test plugin",
+        "author": "Me",
+        "license": "MIT",
+        "url": "/plugin/facility_standards",
+        "plug_point": "facility_standards",
+    }
+    return JSONResponse(p) 
 
-async def get_plugin(request):
+def get_plugin(request):
     name = [request.query_params[name] for name in ['name']][0]
     p = """
 import React, { useEffect } from 'react';
@@ -67,4 +67,4 @@ class MyPlugin extends PluginInterface {
 }
 
 export default MyPlugin;"""
-    return await PlainTextResponse(p)
+    return PlainTextResponse(p)

@@ -183,18 +183,11 @@ routes = [
             # Receipt
             Route("/receipt/monthly", receipt.get_monthly, methods=["GET"]),
             Route("/receipt/monthly", receipt.relay_monthly_receipt, methods=["POST"]),
+
+            Route("/plugin", plugin.list_plugins, methods=["GET"]),
+            Route("/plugin/name", plugin.get_plugin, methods=["GET"]),
         ],
     ),
-    Mount(
-        "/plugin/api/v1",
-        routes=[
-            Route("/list", plugin.list_plugins, methods=["GET"]),
-            Route("/plug_point", plugin.get_plugin, methods=["GET"]),
-        ],
-    ),
-    # Mount('/oql/api/v1', routes = [
-    #     Route('/face', account.stream_accept_account, methods=['POST']),
-    # ]),
     Mount(
         "/stream/api/v1",
         routes=[

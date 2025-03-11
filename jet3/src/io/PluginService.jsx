@@ -1,22 +1,22 @@
 import { fetchGET, fetchTEXT } from "./magellanIO";
 
-const BASE_URL = "/plugin/api/v1";
+const BASE_URL = "/karte/api/v1";
 
 class PluginService {
-  constructor() {}
+	constructor() {}
 
-  async list() {
-    const path = `${BASE_URL}/list`;
-    return await fetchGET(path, null);
-  }
+	async list() {
+		const path = `${BASE_URL}/plugin`;
+		return await fetchGET(path, null);
+	}
 
-  async getPlugin(plugPoint) {
-    const params = {
-      name: plugPoint,
-    };
-    const path = `${BASE_URL}/plug_point`;
-    return await fetchTEXT(path, params);
-  }
+	async getPlugin(plugPoint) {
+		const params = {
+			name: plugPoint
+		};
+		const path = `${BASE_URL}/plugin/name`;
+		return await fetchTEXT(path, params);
+	}
 }
 
 export default PluginService;

@@ -14,9 +14,6 @@ class JWTAuthBackend(AuthenticationBackend):
 
         if request.url.path.startswith('/stream/api/v1'):
             return
-        
-        if request.url.path.startswith('/plugin/api/v1'):
-            return
 
         if "Authorization" not in request.headers:
             raise AuthenticationError('Authorization header must be required')
