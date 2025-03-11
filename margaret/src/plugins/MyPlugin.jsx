@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import PluginInterface from "./PluginInterface";
-import { PluginContext } from "./PluginContext";
 
 const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -26,10 +25,13 @@ const MyUI = ({ start, onStop }) => {
 class MyPlugin extends PluginInterface {
   constructor() {
     super();
-    this.plugPoint = "app_message";
   }
 
-  getPlugPoint() {
+  get name() {
+    return "MyPlugin";
+  }
+
+  get plugPoint() {
     return this.plugPoint;
   }
 

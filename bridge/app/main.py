@@ -18,6 +18,7 @@ from .router import (
     user,
     receipt,
     master,
+    plugin,
 )
 from .lib.jwt_auth import JWTAuthBackend
 from .db import database
@@ -182,6 +183,13 @@ routes = [
             # Receipt
             Route("/receipt/monthly", receipt.get_monthly, methods=["GET"]),
             Route("/receipt/monthly", receipt.relay_monthly_receipt, methods=["POST"]),
+        ],
+    ),
+    Mount(
+        "/plugin/api/v1",
+        routes=[
+            Route("/list", plugin.list_plugins, methods=["GET"]),
+            Route("/plug_point", plugin.get_plugin, methods=["GET"]),
         ],
     ),
     # Mount('/oql/api/v1', routes = [

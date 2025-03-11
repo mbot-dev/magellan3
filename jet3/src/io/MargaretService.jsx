@@ -13,6 +13,7 @@ import PvtService from "./PvtService";
 import RiskService from "./RiskService";
 import StampService from "./StampService";
 import UserService from "./UserService";
+import PluginService from "./PluginService";
 
 class MargaretService {
   constructor() {
@@ -34,6 +35,7 @@ class MargaretService {
     this.riskService = new RiskService();
     this.stampService = new StampService();
     this.userService = new UserService();
+    this.pluginService = new PluginService();
   }
 
   getVersion() {
@@ -84,6 +86,8 @@ class MargaretService {
         return this.stampService;
       case "user":
         return this.userService;
+      case "plugin":
+        return this.pluginService;
       default:
         return null;
     }

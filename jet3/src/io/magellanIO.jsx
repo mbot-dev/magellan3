@@ -36,6 +36,32 @@ export const fetchGET = async (path, params = null) => {
     return keysToCamel(data);
 };
 
+export const withText = fn => async (...args) => {
+    const res = await fn(...args);
+    const { url, status } = res;
+    if (!res.ok) {
+        throw new APIError(url, status);
+    }
+    console.log(`API call status ${res.status} for ${url}`);
+    const data = await res.text();
+    // if (DEBUG) {
+        console.log(data);
+    // }
+    return data;
+};
+
+export const fetchTEXT = async (path, params = null) => {
+    const url = connectionManager.getEndPoint(path, params);
+    const token = connectionManager.getAccessToken();
+    const config = {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    };
+    return await withText(fetch)(url, config);
+};
+
 export const fetchPOST = async (path, payload) => {
     const body = JSON.stringify(keysToSnake(payload));
     const url = connectionManager.getEndPoint(path);
