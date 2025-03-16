@@ -72,7 +72,6 @@ class RcpMaker(Receipt):
         b['rcp_examined_at'] = created[0:8] # 算定日 実日数算定用  YYYYMMDD
         b['rcp_day_at'] = created[6:8] # 算定日
         b['rcp_claim_month'] = created[0:6] # 請求月  YYYYMM
-        b['injected'] = normalized.get('injected', False)  # 自動注入フラグ
         #------------------------------------------------------------
         return b
     
@@ -85,6 +84,7 @@ class RcpMaker(Receipt):
             item[k] = ci.get(k) if ci.get(k) else ''
         for k in receipt:
             item[k] = ''
+        item['injected'] = ci.get('injected', False)  # auto injected flag
         
         if h.is_procedure(ci):
             item['rcp_rec_type'] = SI_診療行為
@@ -111,7 +111,8 @@ class RcpMaker(Receipt):
         if h.is_comment(ci):
             item['rcp_rec_type'] = CO_コメント
             return item
-        return None
+        
+        return None 
     
     def set_relations(self, rcp):
         tensu = str(sum([int(it.get('rcp_tensu')) for it in rcp.get('receipt_items') if it.get('rcp_tensu') != '']))

@@ -138,7 +138,6 @@ class Container(SBase):
             if p.get("under_limit", True) or p.get("is_main_item", True)
         ]:
             bundle = self.bundle_from_injected_item(a)  # claim class code
-            # bundle["injected"] = True  set at avobe method
             bundle["claim_items"].append(a)
             self.context.get_karte().get("p").append(bundle)
         get_logger(__name__).debug(
@@ -319,10 +318,10 @@ class Container(SBase):
                 line = ",".join(line)
                 get_logger(__name__).debug(line)
         try:
-            get_logger(__name__).debug("starting Save")
-            get_logger(__name__).debug(pretty_dumps(receipt_data, "Save"))
+            get_logger(__name__).info("starting Save")
+            get_logger(__name__).info(pretty_dumps(receipt_data, "Save"))
             await self.bridge.save_receipt(receipt_data)
-            get_logger(__name__).debug("end Save")
+            get_logger(__name__).info("end Save")
         except Exception as e:
             get_logger(__name__).debug("---------------------------------")
             get_logger(__name__).debug("Error Save")

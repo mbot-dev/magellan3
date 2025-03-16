@@ -104,6 +104,7 @@ class ClinicInjector(AutoInjector):
                 inj["name"] = name
                 inj["entity"] = entity
                 inj["is_toreru"] = logic  # And(初診, 時間外) etc
+                inj["injected"] = True  # Auto Injection Flag
                 """
                 外来迅速検査加算（に限らないけど）の項目数をカウントする
                 """

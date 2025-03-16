@@ -159,12 +159,12 @@ routes = [
             Route("/risk/{entity}", risk.upcert_risk, methods=["POST"]),
             Route("/risk/{entity}/{id}", risk.delete_risk, methods=["DELETE"]),
             # Lab. Test
-            Route("/lab_test", lab_test.save_lab_test, methods=["POST"]),
-            Route("/lab_test/pivot", lab_test.get_lab_test_pivot, methods=["GET"]),
+            Route("/lab_test", lab_test.save, methods=["POST"]),
+            Route("/lab_test/pivot", lab_test.get_as_pivot, methods=["GET"]),
             Route(
-                "/lab_test/abnormal", lab_test.get_abnormal_lab_test, methods=["GET"]
+                "/lab_test/abnormal", lab_test.get_abnormals, methods=["GET"]
             ),
-            Route("/lab_test/{id}", lab_test.delete_lab_test, methods=["DELETE"]),
+            Route("/lab_test/{id}", lab_test.delete, methods=["DELETE"]),
             # Document
             Route("/document", document.save_document, methods=["POST"]),
             Route(
@@ -197,7 +197,7 @@ routes = [
             Route("/accept/user", account.stream_accept_add_user, methods=["POST"]),
             Route("/facility/user", account.stream_add_user, methods=["POST"]),
             Route("/change_username", account.stream_change_username, methods=["POST"]),
-            Route("/test/{id}", lab_test.stream_get_test, methods=["GET"]),
+            Route("/test/{id}", lab_test.stream_get, methods=["GET"]),
             Route("/patient/{id}", patient.stream_get_patient, methods=["GET"]),
         ],
     ),

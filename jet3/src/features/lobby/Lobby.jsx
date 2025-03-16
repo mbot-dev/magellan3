@@ -13,6 +13,7 @@ import { StampProvider } from "../../reducers/stampState";
 import { initialStampState, stampReducer } from "../../reducers/stampReducer";
 import RoomAccounting from "../accounting/RoomAccounting";
 import RoomPatient from "../pvt/RoomPatient";
+import RoomLab from "../labReceiver/RoomLab";
 import RoomTestAlert from "../notification/RoomTestAlert";
 import RoomFacility from "../facility/RoomFacility";
 import SignUp from "../auth/SignUp";
@@ -223,6 +224,7 @@ const Lobby = () => {
 						<RoomPatient show={(path === "/patient").toString()} />
 						<RoomAccounting show={(path === "/accounting").toString()} />
 						<RoomReceipt show={(path === "/receipt").toString()} />
+						<RoomLab show={(path === "/lab-receiver").toString()} />
 						<RoomTestAlert show={(path === "/notify").toString()} />
 						<StampMaker origin="tool" show={(path === "/tool").toString()} />
 						<RoomFacility show={(path === "/facility").toString()} />

@@ -58,7 +58,7 @@ async def get_shape(conn, fc_id: str, pt_id: str):
         'last_test': last
     }
 
-async def get_lab_pivot(conn, fc_id, pt_id, limit, offset, dsc):
+async def get_as_pivot_org(conn, fc_id, pt_id, limit, offset, dsc):
     sql = pivot_sql.format(add_quote(fc_id), add_quote(pt_id), limit, offset)
     rows = await conn.fetch(sql)
     df = pd.DataFrame(rows, columns=list(rows[0].keys()))  # Thanks
@@ -72,7 +72,7 @@ async def get_lab_pivot(conn, fc_id, pt_id, limit, offset, dsc):
                         index=['lab_code', 'test_code', 'test_name'],  # No unit
                         columns='sampling_date',
                         values='result_value',
-                        aggfunc='count',
+                        aggfunc='sum',  # sum, mean, count
                         fill_value=0)
     # to dict
     dic = pivot.reset_index().to_dict(orient='split')  # row, column ともにascされる
@@ -115,8 +115,35 @@ async def get_lab_pivot(conn, fc_id, pt_id, limit, offset, dsc):
 
     return columns, rows
 
+async def get_as_pivot(request):
+    pool = get_pool(request.app)
+    fc_id, pt_id, limit_str, offset_str, client_order = [request.query_params[name] for name in ['fc_id', 'pt_id', 'limit', 'offset', 'client_order']]
+    limit = int(limit_str)
+    offset = int(offset_str)
+    dsc = (client_order == 'desc')
+    sql = pivot_sql.format(add_quote(fc_id), add_quote(pt_id), limit, offset)
+    async with pool().acquire() as conn:
+        rows = await conn.fetch(sql)
+        df = pd.DataFrame(rows, columns=list(rows[0].keys()))  # Thanks
+        if df is None or df.shape[0] == 0:
+            return None
+        
+        """
+        # df['result_value'] = df['result_value'].apply(pd.to_numeric, errors='coerce')
+        """
+        pivot = pd.pivot_table(df,
+                            index=['lab_code', 'test_code', 'test_name'],  # No unit
+                            columns='sampling_date',
+                            values='result_value',
+                            aggfunc='sum',  # sum, mean, count
+                            fill_value=0)
+        # to dict
+        dic = pivot.reset_index().to_dict(orient='split')  # row, column ともにascされる
+
+        return JSONResponse(dic)
+
 async def get_lab_test_pivot(request):
-    return JSONResponse(None)
+    pass
     # pool = get_pool(request.app)
     # fc_id, pt_id, limit_str, offset_str, client_order = [request.query_params[name] for name in ['fc_id', 'pt_id', 'limit', 'offset', 'client_order']]
     # limit = int(limit_str)
@@ -152,7 +179,7 @@ async def get_lab_test_pivot(request):
         
     #     return JSONResponse(result)
 
-async def save_lab_test(request):
+async def save(request):
     pool = get_pool(request.app)
     module = await request.json()
     async with pool().acquire() as conn:
@@ -253,7 +280,7 @@ async def save_lab_test(request):
             
             return JSONResponse(result)
 
-async def delete_lab_test(request):
+async def delete(request):
     pool = get_pool(request.app)
     id_ = request.path_params['id']
     async with pool().acquire() as conn:
@@ -262,7 +289,7 @@ async def delete_lab_test(request):
             await conn.execute(sql, id_)
             return JSONResponse({'cnt': 1})
 
-async def get_abnormal_lab_test(request):
+async def get_abnormals(request):
     pool = get_pool(request.app)
     id_ = request.query_params['module_id']
     async with pool().acquire() as conn:
@@ -270,7 +297,7 @@ async def get_abnormal_lab_test(request):
         rows = await conn.fetch(ql_, id_, '', 'N')
         return JSONResponse([json.loads(row.get('test')) for row in rows] if rows else [])
 
-async def stream_get_test(request):
+async def stream_get(request):
     pool = get_pool(request.app)
     id_ = request.path_params['id']
     async with pool().acquire() as conn:

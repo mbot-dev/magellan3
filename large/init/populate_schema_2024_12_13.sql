@@ -918,6 +918,7 @@ create table r_item (
     quantity varchar(255) not null,
     unit_code varchar(255) not null default '',
     unit varchar(255) not null default '',
+    injected boolean not null default false,
     --
     cost varchar(255) not null default '', -- 医療機関購入価格
     unit_code_22 varchar(255) not null default '', --別表22
