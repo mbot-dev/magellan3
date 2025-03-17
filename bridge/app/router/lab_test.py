@@ -193,62 +193,71 @@ async def save(request):
             pt_kana = module.get('pt_kana')
             pt_name = module.get('pt_name')
             order_id = module.get('order_id')
-            # is Patient exists
-            ql_ = 'select p.* from m_patient p where p.facility_id = $1 and p.pt_id = $2';
-            row = await conn.fetchrow(ql_, fc_id, pt_id)  # facility_id = fc_id
-            if row is None:
-                return {
-                    'error': {
-                        'status_code': 404, 
-                        'detail': '該当患者無し'
+            # For development
+            development = pt_id.startswith('T_')
+            if not development:
+                # is Patient exists
+                ql_ = 'select p.* from m_patient p where p.facility_id = $1 and p.pt_id = $2';
+                row = await conn.fetchrow(ql_, fc_id, pt_id)  # facility_id = fc_id
+                if row is None:
+                    return {
+                        'error': {
+                            'status_code': 404, 
+                            'detail': '該当患者無し'
+                        }
                     }
-                }
-            # Compare data
-            dic = dict(row)  # cast(rec)  asyncpg
-            db_pt_id = dic.get('pt_id')
-            db_name = dic.get('full_name')
-            db_kana = dic.get('kana')
-            db_dob = dic.get('dob')
-            db_gender = dic.get('gender')
-            # Same gender?
-            if pt_gender is not None and db_gender != pt_gender:
-                return {
-                    'error': {
-                        'status_code': 403, 
-                        'detail': '/gender_unmatch'
-                    }
-                }
-            # Same dob?
-            if pt_dob is not None and db_dob != pt_dob:
-                return {
-                    'error': {
-                        'status_code': 403, 
-                        'detail': '/dob_unmatch'
-                    }
-                }
-            # Same kana?
-            if pt_kana is not None:
-                kana_cmp = ''.join(db_kana.split())
-                pt_kana_cmp = ''.join(pt_kana.split())
-                if kana_cmp != pt_kana_cmp:
+                # Compare data
+                dic = dict(row)  # cast(rec)  asyncpg
+                db_pt_id = dic.get('pt_id')
+                db_name = dic.get('full_name')
+                db_kana = dic.get('kana')
+                db_dob = dic.get('dob')
+                db_gender = dic.get('gender')
+                # Same gender?
+                if pt_gender is not None and db_gender != pt_gender:
                     return {
                         'error': {
                             'status_code': 403, 
-                            'detail': '/kana_unmatch'
+                            'detail': '/gender_unmatch'
                         }
                     }
-            # Same name?
-            if pt_name is not None:
-                name_cmp = ''.join(db_name.split())
-                pt_name_cmp = ''.join(pt_name.split())
-                if name_cmp != pt_name_cmp:
+                # Same dob?
+                if pt_dob is not None and db_dob != pt_dob:
                     return {
                         'error': {
                             'status_code': 403, 
-                            'detail': '/name_unmatch'
+                            'detail': '/dob_unmatch'
                         }
                     }
-
+                # Same kana?
+                if pt_kana is not None:
+                    kana_cmp = ''.join(db_kana.split())
+                    pt_kana_cmp = ''.join(pt_kana.split())
+                    if kana_cmp != pt_kana_cmp:
+                        return {
+                            'error': {
+                                'status_code': 403, 
+                                'detail': '/kana_unmatch'
+                            }
+                        }
+                # Same name?
+                if pt_name is not None:
+                    name_cmp = ''.join(db_name.split())
+                    pt_name_cmp = ''.join(pt_name.split())
+                    if name_cmp != pt_name_cmp:
+                        return {
+                            'error': {
+                                'status_code': 403, 
+                                'detail': '/name_unmatch'
+                            }
+                        }
+            else:
+                db_pt_id = pt_id
+                db_name = pt_name
+                db_kana = pt_kana
+                db_dob = pt_dob
+                db_gender = pt_gender
+            
             # 同じ order_id のレコードを削除する cascade  fc_id=facility_id
             delete_ql = 'delete from m_lab_module where fc_id = $1 and order_id = $2'
             await conn.execute(delete_ql, fc_id, order_id)

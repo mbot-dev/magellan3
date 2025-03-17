@@ -6,6 +6,7 @@ import { useStateValue } from "../../reducers/state";
 import { currFacility } from "../../models/karteCtx";
 import { useMargaret } from "../../io/MargaretProvider";
 import { labDateString } from "../../util/labUtil";
+import withDisplayNull from "../../aux/withDisplayNull";
 
 // const SAMPLING_DF = 'yyyy-m-d HH:MM';
 const SAMPLING_DF = "yyyy-m-d";
@@ -313,4 +314,5 @@ const DisplayNoneInput = styled.input`
 	display: none;
 `;
 
-export default RoomLab;
+const WrappedHome = withDisplayNull(RoomLab);
+export default WrappedHome;
