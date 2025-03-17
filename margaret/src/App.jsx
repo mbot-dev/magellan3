@@ -1,29 +1,70 @@
 import { useEffect, useContext } from "react";
 import pluginContainer from "./plugins/PluginContainer";
 import PluginPoint from "./plugins/PluginPoint";
-// import { usePlugin } from "./plugins/PluginContext";
-import MyPlugin from "./plugins/MyPlugin";
+import MyUI from "./plugins/MyPlugin";
 import { PluginContext } from "./plugins/PluginContext";
-import TestPlugin from "./plugins/TestPlugin";
 
 const App = () => {
-	const [{ execute }, dispatch] = useContext(PluginContext); // usePlugin();
+    const [{ execute }, dispatch] = useContext(PluginContext);
 
-	useEffect(() => {
-		const loadPlugins = (pluginList) => {
-			pluginList.forEach((plugin) => {
-				const PluginClass = plugin.plugPoint;
-				const pluginInstance = new PluginClass();
-				pluginContainer.register(pluginInstance);
-			});
-			pluginContainer.loadPlugins();
-			dispatch({ type: "start" });
-		};
-		// このリストを動的に生成する必要がある
-		const arr = [];
-		arr.push({ plugPoint: MyPlugin });
-		loadPlugins(arr);
-	}, []);
+    useEffect(() => {
+        // MyUIをグローバルスコープに登録
+        window.MyUI = MyUI;
+
+        const sc = `
+        class MyPlugin {
+            constructor() {}
+        
+            get name() {
+                return "MyPlugin";
+            }
+        
+            get plugPoint() {
+                return "app_message";
+            }
+        
+            init() {
+                console.log("App Message Plugin initialized");
+            }
+        
+            render(props) {
+                return <window.MyUI {...props});
+            }
+        }
+
+        window.MyPlugin = MyPlugin;
+        `;
+        // const script = document.createElement("script");
+        // script.textContent = sc;
+        // script.onload = () => {
+        //     const PluginClass = window['MyPlugin'];
+        //     if (PluginClass) {
+        //         const pluginInstance = new PluginClass();
+				// 				console.log(pluginInstance.name);
+				// 				console.log(pluginInstance.plugPoint);
+        //         pluginContainer.register(pluginInstance);
+        //         pluginContainer.loadPlugins();
+        //         dispatch({ type: "start" });
+        //     } else {
+        //         console.error("Class MyPlugin not found");
+        //     }
+        // };
+				// document.body.appendChild(script);
+				// evalを使用してスクリプトを評価
+        eval(sc);
+
+        const PluginClass = window['MyPlugin'];
+        if (PluginClass) {
+            const pluginInstance = new PluginClass();
+            console.log(pluginInstance.name);
+            console.log(pluginInstance.plugPoint);
+            pluginContainer.register(pluginInstance);
+            pluginContainer.loadPlugins();
+            dispatch({ type: "start" });
+        } else {
+            console.error("Class MyPlugin not found");
+        }
+    }, []);
 
 	return (
 		<div>
@@ -35,7 +76,6 @@ const App = () => {
 					onStop={() => dispatch({ type: "stop" })}
 				/>
 			)}
-			{/* <TestPlugin start={execute} onStop={() => dispatch({ type: "stop" })} /> */}
 		</div>
 	);
 };

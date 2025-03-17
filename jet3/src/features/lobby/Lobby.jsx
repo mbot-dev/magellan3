@@ -165,17 +165,6 @@ const Lobby = () => {
 				return;
 			}
 		});
-		//---------------------------------------------
-		// Is here best place to load plugins?
-		// pluginContainer.registerPlugins();
-		// pluginContainer.loadPlugins();
-		//---------------------------------------------
-		const loadPlugins = async () => {
-			const plugins = await margaret.getApi("plugin").getPlugin("karte");
-			// console.log(JSON.stringify(plugins, null, 2));
-			console.log(plugins);
-		};
-		loadPlugins();
 
 		return () => {
 			margaret.getApi("pusher").unsubscribe(pvtChannel);

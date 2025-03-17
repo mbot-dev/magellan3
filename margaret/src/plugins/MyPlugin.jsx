@@ -22,26 +22,26 @@ const MyUI = ({ start, onStop }) => {
   );
 };
 
-class MyPlugin extends PluginInterface {
-  constructor() {
-    super();
-  }
+// class MyPlugin extends PluginInterface {
+//   constructor() {
+//     super();
+//   }
 
-  get name() {
-    return "MyPlugin";
-  }
+//   get name() {
+//     return "MyPlugin";
+//   }
 
-  get plugPoint() {
-    return this.plugPoint;
-  }
+//   get plugPoint() {
+//     return this.plugPoint;
+//   }
 
-  init() {
-    console.log("App Message Plugin initialized");
-  }
+//   init() {
+//     console.log("App Message Plugin initialized");
+//   }
 
-  render(props) {
-    return <MyUI {...props} />;
-  }
-}
+//   render(props) {
+//     return <MyUI {...props} />;
+//   }
+// }
 
-export default MyPlugin;
+export default MyUI;

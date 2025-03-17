@@ -4,7 +4,7 @@ class PluginContainer {
   }
 
   register(plugin) {
-    const point = plugin.getPlugPoint();
+    const point = plugin.plugPoint;
     this.plugins[point] = plugin;
   }
 
@@ -14,7 +14,7 @@ class PluginContainer {
     });
   }
 
-  renderPlugins(name, props) {
+  renderPlugin(name, props) {
     if (this.plugins[name]) {
       return this.plugins[name].render(props);
     }

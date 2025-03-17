@@ -19,7 +19,7 @@ class MargaretService {
   constructor() {
     this.version = "0.6.4";
     this.copyRight = "©2024 Digital Users Inc.",
-    this.productName = "Margarer";
+    this.productName = "マーガレット";
     this.pusherService = new PusherService();
     this.diagnosisService = new DiagnosisService();
     this.documentService = new DocumentService();

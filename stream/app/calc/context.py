@@ -494,9 +494,17 @@ class Context:
     
     def count_gaizinken(self):
         return len([p for p in self.get_procedures("600") if p.get("code") in self.read_items_from(self.PATH_GAIZINKEN)])
+    
+    def 検体検査(self):
+        tests = self.get_procedures("600")
+        lab_tests = [p for p in tests if p.get("tensu_kbn") == "D" and (p.get("kbn_no") >= "000" and p.get("kbn_no") <= "024")]
+        return len(lab_tests) > 0
+    
+    def 緊急(self):
+        return True  # 要カルテ記載
 
     def 緊検(self):
-        return False  # self.体制("院内検査") and (self.時間外() or self.休日() or self.深夜())
+        return self.検体検査 and self.緊急 and self.体制("院内検査") and (self.時間外() or self.休日() or self.深夜())
 
     def 検管1(self):
         return False  # self.施設基準("検管1") and self.届出("検管1")
