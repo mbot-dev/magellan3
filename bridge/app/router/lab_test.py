@@ -58,7 +58,7 @@ async def get_shape(conn, fc_id: str, pt_id: str):
         'last_test': last
     }
 
-async def get_as_pivot_org(conn, fc_id, pt_id, limit, offset, dsc):
+async def get_entry_data_as_pivot(conn, fc_id, pt_id, limit, offset, dsc):
     sql = pivot_sql.format(add_quote(fc_id), add_quote(pt_id), limit, offset)
     rows = await conn.fetch(sql)
     df = pd.DataFrame(rows, columns=list(rows[0].keys()))  # Thanks
@@ -72,23 +72,24 @@ async def get_as_pivot_org(conn, fc_id, pt_id, limit, offset, dsc):
                         index=['lab_code', 'test_code', 'test_name'],  # No unit
                         columns='sampling_date',
                         values='result_value',
-                        aggfunc='sum',  # sum, mean, count
+                        aggfunc='count',  # sum, mean, count
                         fill_value=0)
-    # to dict
+    # to dict  
     dic = pivot.reset_index().to_dict(orient='split')  # row, column ともにascされる
     rows = list()
-    columns = dic['columns'][3:]
-    columns.reverse()
-    num_dates = len(columns)  # test_code test_name unit
+    columns = dic['columns'][3:]  # 0=lab_code, 1=test_code, 2=test_name  3:datetime
+    columns.reverse()  # DSC
+    num_dates = len(columns)  # test_code test_name
     for row in dic.get('data'):
         row_list = list()
         lab_code = row[0]
         test_code = row[1]
+        test_name = row[2]
         # rowHeader
         idx = {
             'lab_code': lab_code,
             'test_code': test_code,
-            'test_name': row[2]
+            'test_name': test_name
         }
         row_list.append(idx)
         # r[3]... -> c, c, c,... reverse
@@ -139,45 +140,43 @@ async def get_as_pivot(request):
                             fill_value=0)
         # to dict
         dic = pivot.reset_index().to_dict(orient='split')  # row, column ともにascされる
-
+        get_logger(__name__).info(pretty_dumps(dic))
         return JSONResponse(dic)
 
 async def get_lab_test_pivot(request):
-    pass
-    # pool = get_pool(request.app)
-    # fc_id, pt_id, limit_str, offset_str, client_order = [request.query_params[name] for name in ['fc_id', 'pt_id', 'limit', 'offset', 'client_order']]
-    # limit = int(limit_str)
-    # offset = int(offset_str)
-    # dsc = (client_order == 'desc')
-    # result = dict()
-    # async with pool().acquire() as conn:
-    #     # offset = 0 -> count num test
-    #     if offset == 0:
-    #         shape = await get_shape(conn, fc_id, pt_id)
-    #         num_tests = shape.get('num_tests')
-    #         if num_tests == 0:
-    #             return None
-    #         result['shape'] = shape
-    #         columns_rows = await get_lab_pivot(conn, fc_id, pt_id, num_tests, 0, dsc)
-    #         result['columns'] = columns_rows[0]
-    #         result['rows'] = columns_rows[1]
-    #         if DEBUG: {
-    #             get_logger(__name__).info(pretty_dumps(result))
-    #         }
+    pool = get_pool(request.app)
+    fc_id, pt_id, limit_str, offset_str, client_order = [request.query_params[name] for name in ['fc_id', 'pt_id', 'limit', 'offset', 'client_order']]
+    limit = int(limit_str)
+    offset = int(offset_str)
+    dsc = (client_order == 'desc')
+    result = dict()
+    async with pool().acquire() as conn:
+        # offset = 0 -> count num test
+        if offset == 0:
+            shape = await get_shape(conn, fc_id, pt_id)
+            num_tests = shape.get('num_tests')
+            if num_tests == 0:
+                return None
+            result['shape'] = shape
+            columns, rows = await get_entry_data_as_pivot(conn, fc_id, pt_id, num_tests, 0, dsc)
+            result['columns'] = columns
+            result['rows'] = rows
+            if DEBUG:
+                get_logger(__name__).info(pretty_dumps(result))
 
-    #     # modules
-    #     sql = module_ql.format(add_quote(fc_id), add_quote(pt_id), limit, offset)
-    #     rows = await conn.fetch(sql)
-    #     modules = [json.loads(row.get('module')) for row in rows] if rows is not None else []
-    #     result['result_list'] = modules
-    #     if DEBUG: {
-    #         get_logger(__name__).info(pretty_dumps(result))
-    #     }
+        # modules
+        sql = module_ql.format(add_quote(fc_id), add_quote(pt_id), limit, offset)
+        rows = await conn.fetch(sql)
+        modules = [json.loads(row.get('module')) for row in rows] if rows is not None else []
+        result['result_list'] = modules
+        if DEBUG: {
+            get_logger(__name__).info(pretty_dumps(result))
+        }
 
-    #     if not dsc:
-    #         result['result_list'].reverse()
+        if not dsc:
+            result['result_list'].reverse()
         
-    #     return JSONResponse(result)
+        return JSONResponse(result)
 
 async def save(request):
     pool = get_pool(request.app)

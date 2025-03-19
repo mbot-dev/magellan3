@@ -160,7 +160,7 @@ routes = [
             Route("/risk/{entity}/{id}", risk.delete_risk, methods=["DELETE"]),
             # Lab. Test
             Route("/lab_test", lab_test.save, methods=["POST"]),
-            Route("/lab_test/pivot", lab_test.get_as_pivot, methods=["GET"]),
+            Route("/lab_test/pivot", lab_test.get_lab_test_pivot, methods=["GET"]),   # Route("/lab_test/pivot", lab_test.get_as_pivot, methods=["GET"]),
             Route(
                 "/lab_test/abnormal", lab_test.get_abnormals, methods=["GET"]
             ),

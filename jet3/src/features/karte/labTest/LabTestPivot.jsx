@@ -24,6 +24,7 @@ import {
 } from "../../../util/labUtil";
 import { getSelectedRow } from "../../../aux/FormUtil";
 import DaingerSelection from "../../../cmp/DaingerSelection";
+import { StickyBody, StickyColumn } from "../../../aux/commonStyles";
 
 const TEST_HEADER = [
 	{ key: v4(), label: "検査項目"},
@@ -181,7 +182,7 @@ const PrintComponent = ({ test }) => {
 
 const LabTestPivot = ({ patient }) => {
 	const margaret = useMargaret();
-	const [{ user, settings }, dispatch] = useStateValue()[0];
+	const [{ user, settings }, dispatch] = useStateValue();
 	const [data, setData] = useState(null);
 	const [columns, rows, resultList] = useT(data);
 	const [selectedColumn, setSelectedColumn] = useState(-1);
@@ -196,7 +197,7 @@ const LabTestPivot = ({ patient }) => {
 			try {
 				const result = await margaret
 					.getApi("labTest")
-					.getLabTestPivot(fcId, ptId, 100, 0, "desc");
+					.getLabTestPivot(fcId, "T_00001", 100, 0, "desc");    // getLabTestPivot(fcId, ptId, 100, 0, "desc");
 				if (result) {
 					setData(result);
 				} else {
@@ -303,10 +304,10 @@ const LabTestPivot = ({ patient }) => {
 			? `ラボ: ${lab} 検体採取日時: ${sd} 検査実施日: ${testedAt}`
 			: `ラボ: ${lab} 検体採取日時: ${sd}`;
 		return (
-			<Board>
-				<table className="w3-table w3-bordered w3-hoverable">
-					<thead>
-						<tr className="w3-border-bottom">
+			<Board style={{ "--mxh": chartData.length > 1 ? "460px)" : "180px" }}>
+				<MyTable>
+					<StickyColumn>
+						<tr>
 							<th
 								colSpan={ATTRIBUTES.length}
 								className={
@@ -320,8 +321,8 @@ const LabTestPivot = ({ patient }) => {
 								{headerStr}
 							</th>
 						</tr>
-					</thead>
-					<tbody>
+					</StickyColumn>
+					<StickyBody>
 						<tr className="w3-border-bottom">
 							{TEST_HEADER.map((attr) => {
 								return <td key={attr.key}>{attr.label}</td>;
@@ -367,8 +368,8 @@ const LabTestPivot = ({ patient }) => {
 								</tr>
 							);
 						})}
-					</tbody>
-				</table>
+					</StickyBody>
+				</MyTable>
 			</Board>
 		);
 	};
@@ -431,10 +432,10 @@ const LabTestPivot = ({ patient }) => {
 
 	const renderMany = () => {
 		return (
-			<Board>
-				<table className="w3-table" style={{ cursor: "pointer" }}>
-					<thead>
-						<tr className="w3-border-bottom">
+			<Board style={{ "--mxh": chartData.length > 1 ? "460px" : "180px"}}>
+				<MyTable>
+					<StickyColumn>
+						<tr>
 							<TopLeft>検査項目</TopLeft>
 							{columns.map((sd, col) => {
 								if (col === selectedColumn) {
@@ -462,8 +463,8 @@ const LabTestPivot = ({ patient }) => {
 								}
 							})}
 						</tr>
-					</thead>
-					<tbody>
+					</StickyColumn>
+					<StickyBody>
 						{rows.map((row, rowNum) => {
 							const rowId = row[0]["id"];
 							return (
@@ -483,8 +484,8 @@ const LabTestPivot = ({ patient }) => {
 								</tr>
 							);
 						})}
-					</tbody>
-				</table>
+					</StickyBody>
+				</MyTable>
 			</Board>
 		);
 	};
@@ -566,18 +567,25 @@ const LabTestPivot = ({ patient }) => {
 
 const Board = styled.div`
 	display: flex;
-	flex-wrap: nowrap;
-	overflow-x: auto;
+  flex-wrap: nowrap;
+	max-height: calc(100vh - var(--mxh));
+  overflow-x: auto;
+`;
+
+const MyTable = styled.table.attrs({
+  className: "w3-table w3-border w3-bordered",
+})`
+  flex-shrink: 0;
 `;
 
 const TopLeft = styled.th`
-	position: sticky;
-	left: 0;
+	// position: sticky;
+	// left: 0;
 	min-width: 224px;
 	max-width: 224px;
 	z-index: 1;
-	background-color: var(--surface) !important;
-	color: var(--on-surface) !important;
+	// background-color: var(--surface) !important;
+	// color: var(--on-surface) !important;
 `;
 
 const FixedColumn = styled.td`
