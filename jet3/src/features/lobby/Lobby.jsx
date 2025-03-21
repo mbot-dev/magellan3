@@ -23,7 +23,7 @@ import RoomSettings from "../setting/RoomSettings";
 import StampMaker from "../stamp/StampMaker";
 import RoomKarte from "../karte/RoomKarte";
 import RoomReceipt from "../receipt/RoomReceipt";
-// import pluginContainer from "../../plugins/PluginContainer";
+import pluginContainer from "../../plugins/PluginContainer";
 
 const PVT_EVENT = "magellan:pvt-update";
 
@@ -165,6 +165,9 @@ const Lobby = () => {
 				return;
 			}
 		});
+		// Load plugins
+		pluginContainer.registerPlugins();
+		pluginContainer.loadPlugins();
 
 		return () => {
 			margaret.getApi("pusher").unsubscribe(pvtChannel);
