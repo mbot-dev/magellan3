@@ -21,8 +21,10 @@ const DELETE = true
 // 無効: 40 41
 // ResultOfQualificationConfirmation=2: 47, 50,
 
+// 別紙 3-1_XML レイアウト仕様 _Ver8.07
+// ヘッダー
 const HEADER_ELEMENTS = [
-  { name: '処理実行日時', key: 'ProcessExecutionTime' },
+  { name: '処理実行日時', key: 'ProcessExecutionTime' }, // YYYYMMDDHHmmss
   { name: '資格確認日', key: 'QualificationConfirmationDate' }, // yyyyMMdd
   { name: '医療機関コード', key: 'MedicalInstitutionCode' },
   { name: '任意のファイル識別子', key: 'ArbitraryFileIdentifier' },
@@ -33,6 +35,7 @@ const HEADER_ELEMENTS = [
   { name: '文字コード識別', key: 'CharacterCodeIdentifier', drop: true }, // string 0: UTF-8  1: SHIFT_JIS
 ]
 
+// 資格確認照会用情報
 const QualificationConfirmSearchInfo = [
   { name: '保険者番号', key: 'InsurerNumber' },
   { name: '被保険者証記号', key: 'InsuredCardSymbol' },
@@ -46,20 +49,22 @@ const QualificationConfirmSearchInfo = [
   { name: '任意のファイル識別子', key: 'ArbitraryIdentifier' },
 ]
 
+// ボディ
 const BODY_ELEMENYS = [
   { name: '処方箋発行形態', key: 'PrescriptionIssueSelect' }, // 患者が選択した処方箋の発行形態
   { name: '処理結果状況', key: 'ProcessingResultStatus' }, // 個人単位でオンライン資格確認システムの処理結果を表す区分 1: 正常終了 2: 異常終了 別紙5-1_業務コード仕様 [OQSCD004]
-  { name: '処理結果コード', key: 'ProcessingResultCode' }, // 処理結果状況がエラーの場合及び正常終了で付帯情報がある場合 別紙6-1_処理結果コード
+  { name: '処理結果コード', key: 'ProcessingResultCode' }, // 処理結果状況がエラーの場合及び正常終了で付帯情報がある場合 別紙6-1_処理結果コード  付帯情報の例 マイナンバーカードの失効期限3か月前
   { name: '処理結果メッセージ', key: 'ProcessingResultMessage' }, // その内容 -> そのまま表示
+  { name: '資格有効性', key: 'QualificationValidity', len: 1 },
   // 1: 有効
   // 2: 無効
   // 3: 無効（新しい資格あり）
   // 4: 該当資格なし
   // 5: 複数該当       医療保険: ○  医療扶助: X
   // 6: 有効（未登録）  医療保険: X  医療扶助: ○
-  { name: '資格有効性', key: 'QualificationValidity', len: 1 },
 ]
 
+// 資格確認結果リスト -> 資格確認結果
 const ResultOfQualificationConfirmation = [
   { name: '被保険者証区分', key: 'InsuredCardClassification' }, // 02: 被保険者証（退職） 03: 短期被保険者証（一般） 04: 短期被保険者証（退職）06: 特例退職被保険者証  A1: 医療扶助
   { name: '保険者番号', key: 'InsurerNumber' },
@@ -70,23 +75,20 @@ const ResultOfQualificationConfirmation = [
   { name: '被保険者氏名(世帯主氏名)', keyqq: 'InsuredName' },
   { name: '氏名', key: 'Name' },
   { name: '氏名（その他）', key: 'NameOfOther' },
-  { name: '氏名カナ', key: 'NameKana' },
-  { name: '氏名カナ（その他）', key: 'NameOfOtherKana' },
+  { name: '氏名カナ', key: 'NameKana' }, // half size
+  { name: '氏名カナ（その他）', key: 'NameOfOtherKana' }, // half size
   { name: '性別1', key: 'Sex1' }, // 1: 男  2: 女  3: 未設定
   { name: '性別2', key: 'Sex2' }, // 平成24年9月21日事務連絡 被保険者証の性別表記について」または「生活保護法による医療券等の記載要領について」（平成11年8月27日社援保第41号）に基づく取り扱いを実施している場合に設定する。
-  { name: '生年月日', key: 'Birthdate' },
+  { name: '生年月日', key: 'Birthdate' }, // YYYYMMDD
   { name: '住所', key: 'Address' }, // 保険者に届け出ている住所 カルテの住所と一致しない場合がある
   { name: '郵便番号', key: 'PostNumber' },
-  { name: '資格取得年月日', key: 'QualificationDate' },
-  { name: '資格喪失年月日', key: 'DisqualificationDate' },
-  { name: '被保険者証交付年月日', key: 'InsuredCertificateIssuanceDate' },
-  { name: '被保険者証有効開始年月日', key: 'InsuredCardValidDate' },
-  { name: '被保険者証有効終了年月日', key: 'InsuredCardExpirationDate' },
+  { name: '資格取得年月日', key: 'QualificationDate' }, // YYYYMMDD 加入者資格の取得日 医療扶助の場合、生活保護が開始、または再開した年月日
+  { name: '資格喪失年月日', key: 'DisqualificationDate' }, // YYYYMMDD 加入者資格の喪失日 医療扶助の場合、生活保護を停止、また廃止した年月日
+  { name: '被保険者証交付年月日', key: 'InsuredCertificateIssuanceDate' }, // YYYYMMDD 被保険者証が交付された日
+  { name: '被保険者証有効開始年月日', key: 'InsuredCardValidDate' }, // YYYYMMDD 被保険者証が有効である最初の日
+  { name: '被保険者証有効終了年月日', key: 'InsuredCardExpirationDate' }, // YYYYMMDD 被保険者証が有効である最後の日
   {
-    name: '被保険者証一部負担金割合',
-    key: 'InsuredPartialContributionRatio',
-    number: true,
-  }, // 1割負担=010jjj
+    name: '被保険者証一部負担金割合', key: 'InsuredPartialContributionRatio', number: true }, // 後期高齢者の一部負担割合（例）1割負担の時は、"010"と設定する。1割負担=010jjj
   { name: '未就学区分', key: 'PreschoolClassification' }, // 1: 未就学  2: 就学中
   { name: '資格喪失事由', key: 'ReasonOfLoss' }, // prefix=0 -> 01: 死亡  02: 生活保護受給開始  03: 医療保険等の資格取得  99: その他
   { name: '保険者名称', key: 'InsurerName' },
@@ -189,6 +191,122 @@ const ResultOfQualificationConfirmation = [
         ],
       },
     ],
+  },
+  {
+    name: '医療扶助資格確認結果リスト',
+    key: 'PublicExpenseResultList',
+    children: [
+      {
+        name: '医療券・調剤券情報',
+        key: 'MedicalTicketInfo',
+        children: [
+          {
+            name: '医療券・調剤券別',
+            key: 'TicketType',
+          },
+          {
+            name: '医療券・調剤券有効開始年月日',
+            key: 'MedicalTicketValidDate',
+          },
+          {
+            name: '医療券・調剤券有効終了年月日',
+            key: 'MedicalTicketExpirationDate',
+          },
+          {
+            name: '交付番号',
+            key: 'IssueNumber',
+          },
+          {
+            name: '診療年月',
+            key: 'MedicalTreatmentMonth',
+          },
+          {
+            name: '指定医療機関コード',
+            key: 'DesignatedMedicalInstitutionCode',
+          },
+          {
+            name: '指定医療機関確認フラグ',
+            key: 'DesignatedMedicalInstitutionFlag',
+          },
+          {
+            name: '指定医療機関名',
+            key: 'DesignatedMedicalInstitutionName',
+          },
+          {
+            name: '処方箋発行元医療機関コード',
+            key: 'PrescriptionIssuerMedicalInstitutionCode',
+          },
+          {
+            name: '処方箋発行元医療機関名',
+            key: 'PrescriptionIssuerMedicalInstitutionName',
+          },
+          {
+            name: '傷病名1',
+            key: 'InjuryName1',
+          },
+          {
+            name: '傷病名2',
+            key: 'InjuryName2',
+          },
+          {
+            name: '傷病名3',
+            key: 'InjuryName3',
+          },
+          {
+            name: '診療別',
+            key: 'MedicalTreatmentType',
+          },
+          {
+            name: '本人支払額（自己負担額）',
+            key: 'SelfPayAmount',
+          },
+          {
+            name: '地区担当員名',
+            key: 'DistrictContactName',
+          },
+          {
+            name: '取扱担当者名',
+            key: 'HandlingContactName',
+          },
+          {
+            name: '単独・併用別',
+            key: 'SingleOrCombinedUse',
+          },
+          {
+            name: '社会保険状況',
+            key: 'StatusOfSocialInsurance',
+          },
+          {
+            name: '社会保険状況の整合性フラグ',
+            key: 'ConsistencyFlag',
+          },
+          {
+            name: '感染症の予防及び感染症の患者に対する医療に関する法律第37条の2の該当状況',
+            key: 'StatusOfInfecton',
+          },
+          {
+            name: '後期高齢者医療の該当状況',
+            key: 'StatusOfElderlyMedicalCare',
+          },
+          {
+            name: '都道府県費の該当状況',
+            key: 'StatusOfPrefecturalExpenses',
+          },
+          {
+            name: '備考1',
+            key: 'Remarks1',
+          },
+          {
+            name: '備考2',
+            key: 'Remarks2',
+          },
+          {
+            name: '備考3',
+            key: 'Remarks3',
+          },
+        ]
+      }
+    ]
   },
   {
     name: '特定健診情報閲覧同意フラグ',
