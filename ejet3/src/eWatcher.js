@@ -10,7 +10,7 @@ const URL_TO_FACE = 'https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1
 // const URL_TO_FACE = 'http://localhost:8066/karte/api/v1/pvt/face'
 const DEBUG = false
 const DEBUG_PARSED = false
-const POST = true
+const POST = false
 const DELETE = true
 
 // 4 41 47 50 55
@@ -360,8 +360,10 @@ const Check = [
     arg: ['InsuredCardClassification'],
   },
   { name: '保険名称', key: 'InsurerName' },
+  { name: '保険者番号', key: 'InsurerNumber' },
   { name: '被保険者証記号', key: 'InsuredCardSymbol' },
   { name: '被保険者証番号', key: 'InsuredIdentificationNumber' },
+  { name: '被保険者証枝番', key: 'InsuredBranchNumber' },
   {
     name: '本人家族区分',
     key: 'PersonalFamilyClassification',
@@ -376,6 +378,7 @@ const Check = [
   { name: '性別1', key: 'Sex1', func: 'Sex', arg: ['Sex1'] }, // 1: 男  2: 女  3: 未設定
   { name: '性別2', key: 'Sex2', func: 'Sex', arg: ['Sex2'] }, // 平成24年9月21日事務連絡 被保険者証の性別表記について」または「生活保護法による医療券等の記載要領について」（平成11年8月27日社援保第41号）に基づく取り扱いを実施している場合に設定する。
   { name: '生年月日', key: 'Birthdate' },
+  { name: '年齢', key: 'Birthdate', func: 'ageAt', arg: ['Birthdate', 'QualificationConfirmationDate'] },
   {
     name: '高齢者',
     key: 'ElderlyRecipientCertificateInfo',
@@ -389,7 +392,7 @@ const Check = [
     func: 'PreschoolClassification',
     arg: ['PreschoolClassification'],
   },
-  { name: '被保険者証一部負担金割合', key: 'InsuredPartialContributionRatio' }, // 1割負担=010jjj
+  { name: '被保険者証一部負担金割合', key: 'InsuredPartialContributionRatio' }, // 1割負担=010
   // 同意情報
   {
     name: '限度額',
@@ -485,7 +488,7 @@ class ResWatcher {
     this.watcher = chokidar.watch(directoryToWatch, {
       ignored: (file, _stats) => _stats?.isFile() && !file.endsWith('.xml'),
       persistent: true,
-    }).on('add', path => {
+    }).on('change', path => {
       console.log(path)
       fs.readFile(path, 'utf8', (error, data) => {
         if (error) {
@@ -585,6 +588,10 @@ class ResWatcher {
         const ele = resultList['ResultOfQualificationConfirmation']
         this.extract2(ele, ResultOfQualificationConfirmation, visit)
       }
+      // print visit
+      console.log('........................................')
+      console.log(JSON.stringify(visit, null, 3))
+      console.log('........................................')
       // Summry
       console.log('........................................')
       Check.forEach((attr) => {
@@ -598,6 +605,44 @@ class ResWatcher {
           console.log(`${name}(${key}) = ${val}`)
         }
       })
+      const limitApp = visit['LimitApplicationCertificateRelatedInfo']
+      if (limitApp) {
+        Object.keys(limitApp).forEach((key) => {
+          if (key === 'LimitApplicationCertificateClassificationFlag') {
+            const target = limitApp[key]
+            const [m] = [target].map((v) => {
+              switch (v) {
+                case 'B01':
+                  return '現役並みⅢ(B01)'
+                case 'B02':
+                  return '現役並みⅡ(B02)'
+                case 'B03':
+                  return '現役並みⅠ(B03)'
+                case 'B09':
+                  return '一般Ⅱ(B09)'
+                case 'B10':
+                  return '一般Ⅰ(B10)'
+                case 'B04':
+                  return '一般(B04)'
+                case 'B05':
+                  return '低所得Ⅱ(B05)'
+                case 'B06':
+                  return '低所得Ⅰ(B06)'
+                case 'B07':
+                  return '低所得Ⅰ（老福）(B07)'
+                case 'B08':
+                  return '低所得Ⅰ（境）(B08)'
+                default:
+                  return `不明(${v})`
+              }
+            })
+            console.log(`${key} = ${m}`)
+            
+          } else {
+            console.log(`${key} = ${limitApp[key]}`)
+          }
+        }) 
+      }
       console.log('........................................')
 
       // to snake case
