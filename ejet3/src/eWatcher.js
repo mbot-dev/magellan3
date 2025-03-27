@@ -9,7 +9,7 @@ const STATUS_ERROR = 'error'
 const URL_TO_FACE = 'https://dashing-skunk-nominally.ngrok-free.app/karte/api/v1/pvt/face'
 // const URL_TO_FACE = 'http://localhost:8066/karte/api/v1/pvt/face'
 const DEBUG = false
-const DEBUG_PARSED = false
+const DEBUG_PARSED = true
 const POST = false
 const DELETE = true
 
@@ -468,10 +468,6 @@ class ResWatcher {
     this.oqsFunc = new OqsFunc()
   }
 
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
   start(directoryToWatch) {
     console.log(`Watching ${directoryToWatch} will start...`)
     if (!fs.existsSync(directoryToWatch)) {
@@ -488,7 +484,12 @@ class ResWatcher {
     this.watcher = chokidar.watch(directoryToWatch, {
       ignored: (file, _stats) => _stats?.isFile() && !file.endsWith('.xml'),
       persistent: true,
-    }).on('change', path => {
+      ignoreInitial: false,
+      awaitWriteFinish: {
+        stabilityThreshold: 2000, // ファイルサイズが変わらない時間 2sec.
+        pollInterval: 200 // チェック間隔 100ms
+      },
+    }).on('add', path => {
       console.log(path)
       fs.readFile(path, 'utf8', (error, data) => {
         if (error) {
@@ -525,21 +526,22 @@ class ResWatcher {
     return this.state
   }
 
-  extract2(ele, attrs, obj) {
-    attrs.forEach((attr) => {
+  extract(ele, attrs, obj) {
+    attrs.reduce((acc, attr) => {
       const { key, children } = attr
       const target = ele[key]
       if (children && target) {
         const o = {}
-        obj[key] = o
-        this.extract2(target, children, o)
+        acc[key] = o
+        this.extract(target, children, o, obj)
       } else {
         const val = ele[key]?.['_text'] ?? null
         if (val && !attr.drop) {
-          obj[key] = val
+          acc[key] = val
         }
       }
-    })
+      return acc
+    }, obj)
   }
 
   async parse(data, path) {
@@ -570,7 +572,7 @@ class ResWatcher {
       }
       // Parse Header
       console.log('Extraction started...')
-      this.extract2(header, HEADER_ELEMENTS, visit)
+      this.extract(header, HEADER_ELEMENTS, visit)
       // Parse Body
       const body = json['XmlMsg']?.['MessageBody']
       if (!body) {
@@ -578,15 +580,15 @@ class ResWatcher {
       }
       if (body['QualificationConfirmSearchInfo']) {
         const ele = body['QualificationConfirmSearchInfo']
-        this.extract2(ele, QualificationConfirmSearchInfo, visit)
+        this.extract(ele, QualificationConfirmSearchInfo, visit)
       }
 
-      this.extract2(body, BODY_ELEMENYS, visit)
+      this.extract(body, BODY_ELEMENYS, visit)
 
       if (body['ResultList']) {
         const resultList = body['ResultList']
         const ele = resultList['ResultOfQualificationConfirmation']
-        this.extract2(ele, ResultOfQualificationConfirmation, visit)
+        this.extract(ele, ResultOfQualificationConfirmation, visit)
       }
       // print visit
       console.log('........................................')
