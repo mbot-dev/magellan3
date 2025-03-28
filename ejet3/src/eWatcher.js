@@ -337,26 +337,26 @@ const Check = [
   {
     name: '処理結果状況',
     key: 'ProcessingResultStatus',
-    func: 'ProcessingResultStatus',
+    func: 'OQSCD004',
     arg: ['ProcessingResultStatus'],
   },
   {
     name: '照会区分',
     key: 'ReferenceClassification',
-    func: 'ReferenceClassification',
+    func: 'OQSCD002',
     arg: ['ReferenceClassification'],
   },
   {
     name: '資格有効性',
     key: 'QualificationValidity',
-    func: 'QualificationValidity',
+    func: 'OQSCD006',
     arg: ['QualificationValidity'],
   },
   // Insurance Info
   {
     name: '被保険者証区分',
     key: 'InsuredCardClassification',
-    func: 'InsuredCardClassification',
+    func: 'OQSCD010',
     arg: ['InsuredCardClassification'],
   },
   { name: '保険名称', key: 'InsurerName' },
@@ -367,7 +367,7 @@ const Check = [
   {
     name: '本人家族区分',
     key: 'PersonalFamilyClassification',
-    func: 'PersonalFamilyClassification',
+    func: 'OQSCD009',
     arg: ['PersonalFamilyClassification'],
   },
   { name: '被保険者氏名(世帯主氏名)', key: 'InsuredName' },
@@ -375,24 +375,26 @@ const Check = [
   { name: '氏名（その他）', key: 'NameOfOther' },
   { name: '氏名カナ', key: 'NameKana' },
   { name: '氏名カナ（その他）', key: 'NameOfOtherKana' },
-  { name: '性別1', key: 'Sex1', func: 'Sex', arg: ['Sex1'] }, // 1: 男  2: 女  3: 未設定
-  { name: '性別2', key: 'Sex2', func: 'Sex', arg: ['Sex2'] }, // 平成24年9月21日事務連絡 被保険者証の性別表記について」または「生活保護法による医療券等の記載要領について」（平成11年8月27日社援保第41号）に基づく取り扱いを実施している場合に設定する。
+  { name: '性別1', key: 'Sex1', func: 'OQSCD007', arg: ['Sex1'] }, // 1: 男  2: 女  3: 未設定
+  { name: '性別2', key: 'Sex2', func: 'OQSCD007', arg: ['Sex2'] }, // 平成24年9月21日事務連絡 被保険者証の性別表記について」または「生活保護法による医療券等の記載要領について」（平成11年8月27日社援保第41号）に基づく取り扱いを実施している場合に設定する。
   { name: '生年月日', key: 'Birthdate' },
   { name: '年齢', key: 'Birthdate', func: 'ageAt', arg: ['Birthdate', 'QualificationConfirmationDate'] },
   {
-    name: '高齢者',
+    name: '高齢受給者証情報',
     key: 'ElderlyRecipientCertificateInfo',
     func: 'ElderlyRecipientCertificateInfo',
-
     arg: ['ElderlyRecipientCertificateInfo'],
   },
   {
     name: '未就学児',
     key: 'PreschoolClassification',
-    func: 'PreschoolClassification',
+    func: 'OQSCD015',
     arg: ['PreschoolClassification'],
   },
-  { name: '被保険者証一部負担金割合', key: 'InsuredPartialContributionRatio' }, // 1割負担=010
+  // 後期高齢者医療制度の場合に設定する。
+  // 令和4年10月の制度改正（後期高齢者の窓口負担2割化）以降、2割負担の時は"020"を設定する。
+  // ※医療保険の独自項目。医療扶助の場合、設定しない。
+  { name: '被保険者証一部負担金割合', key: 'InsuredPartialContributionRatio' },
   // 同意情報
   {
     name: '限度額',
@@ -527,13 +529,13 @@ class ResWatcher {
   }
 
   extract(ele, attrs, obj) {
-    attrs.reduce((acc, attr) => {
+    const ret = attrs.reduce((acc, attr) => {
       const { key, children } = attr
       const target = ele[key]
       if (children && target) {
         const o = {}
         acc[key] = o
-        this.extract(target, children, o, obj)
+        this.extract(target, children, o)
       } else {
         const val = ele[key]?.['_text'] ?? null
         if (val && !attr.drop) {
@@ -542,6 +544,8 @@ class ResWatcher {
       }
       return acc
     }, obj)
+
+    return ret
   }
 
   async parse(data, path) {
@@ -551,7 +555,7 @@ class ResWatcher {
       if (DEBUG_PARSED) {
         console.log(JSON.stringify(json, null, 3))
       }
-      const visit = {}
+      let visit = {}
       // Parse Heaader
       const header = json['XmlMsg']?.['MessageHeader']
       if (!header) {
@@ -572,7 +576,7 @@ class ResWatcher {
       }
       // Parse Header
       console.log('Extraction started...')
-      this.extract(header, HEADER_ELEMENTS, visit)
+      visit = this.extract(header, HEADER_ELEMENTS, visit)
       // Parse Body
       const body = json['XmlMsg']?.['MessageBody']
       if (!body) {
@@ -580,15 +584,15 @@ class ResWatcher {
       }
       if (body['QualificationConfirmSearchInfo']) {
         const ele = body['QualificationConfirmSearchInfo']
-        this.extract(ele, QualificationConfirmSearchInfo, visit)
+        visit = this.extract(ele, QualificationConfirmSearchInfo, visit)
       }
 
-      this.extract(body, BODY_ELEMENYS, visit)
+      visit = this.extract(body, BODY_ELEMENYS, visit)
 
       if (body['ResultList']) {
         const resultList = body['ResultList']
         const ele = resultList['ResultOfQualificationConfirmation']
-        this.extract(ele, ResultOfQualificationConfirmation, visit)
+        visit = this.extract(ele, ResultOfQualificationConfirmation, visit)
       }
       // print visit
       console.log('........................................')
@@ -611,35 +615,9 @@ class ResWatcher {
       if (limitApp) {
         Object.keys(limitApp).forEach((key) => {
           if (key === 'LimitApplicationCertificateClassificationFlag') {
-            const target = limitApp[key]
-            const [m] = [target].map((v) => {
-              switch (v) {
-                case 'B01':
-                  return '現役並みⅢ(B01)'
-                case 'B02':
-                  return '現役並みⅡ(B02)'
-                case 'B03':
-                  return '現役並みⅠ(B03)'
-                case 'B09':
-                  return '一般Ⅱ(B09)'
-                case 'B10':
-                  return '一般Ⅰ(B10)'
-                case 'B04':
-                  return '一般(B04)'
-                case 'B05':
-                  return '低所得Ⅱ(B05)'
-                case 'B06':
-                  return '低所得Ⅰ(B06)'
-                case 'B07':
-                  return '低所得Ⅰ（老福）(B07)'
-                case 'B08':
-                  return '低所得Ⅰ（境）(B08)'
-                default:
-                  return `不明(${v})`
-              }
-            })
+            const val = limitApp[key]
+            const m = this.oqsFunc.OQSCD012(val)
             console.log(`${key} = ${m}`)
-            
           } else {
             console.log(`${key} = ${limitApp[key]}`)
           }
